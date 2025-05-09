@@ -1,0 +1,1 @@
+web: gunicorn ruoth_pins.wsgi --workers=3 --bind 0.0.0.0:$PORT
