@@ -37,6 +37,8 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS').split(',')
+
 print("!!! DATABASE CONFIG !!!")
 print(f"DB NAME: {config('PGDATABASE', default='postgres')}")
 print(f"DB USER: {config('PGUSER', default='postgres')}")
