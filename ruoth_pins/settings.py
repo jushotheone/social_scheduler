@@ -15,9 +15,9 @@ from pathlib import Path
 from decouple import config
 import sys
 import logging
-
-# Load environment variables from the.env file
 from dotenv import load_dotenv
+import dj_database_url
+
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -103,14 +103,9 @@ WSGI_APPLICATION = 'ruoth_pins.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('PGDATABASE', default='postgres'),
-        'USER': config('PGUSER', default='postgres'),
-        'PASSWORD': config('PGPASSWORD'),
-        'HOST': config('PGHOST', default='localhost'),
-        'PORT': config('PGPORT', default='5432'),
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL')
+    )
 }
 
 # Password validation
