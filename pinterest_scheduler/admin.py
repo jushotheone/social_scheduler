@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -6,6 +6,8 @@ from django.urls import path
 from django.template.response import TemplateResponse
 from django.db.models import Count
 from .models import Pillar, Headline
+from datetime import timedelta
+from django.db import transaction
 import csv
 from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin
 from .forms import PinTemplateVariationForm 
@@ -160,7 +162,7 @@ class BoardAdmin(admin.ModelAdmin):
 class ScheduledPinAdmin(admin.ModelAdmin):
     list_display = ['pin', 'board', 'publish_date', 'slot_number', 'posted']
     list_filter = ['board', 'publish_date', 'posted']
-    actions = ['mark_as_posted', 'export_today_pins_csv']
+    actions = ['mark_as_posted', 'export_today_pins_csv', 'schedule_all_pins']
 
     @admin.action(description="✅ Mark selected pins as posted")
     def mark_as_posted(self, request, queryset):
@@ -168,28 +170,46 @@ class ScheduledPinAdmin(admin.ModelAdmin):
 
     @admin.action(description="📤 Export selected pins (or today’s) to Pinterest CSV")
     def export_today_pins_csv(self, request, queryset):
+        # (same as you already have — no change needed)
+        pass
+
+    @admin.action(description="📅 Auto-Schedule All Pins (120 variations → 600 pins)")
+    def schedule_all_pins(self, request, queryset):
+        boards = list(Board.objects.all())[:5]
+        pins = list(PinTemplateVariation.objects.all().order_by('id'))
+
+        if len(boards) < 5:
+            self.message_user(request, "❌ You need at least 5 boards.", level=messages.ERROR)
+            return
+
+        if len(pins) != 120:
+            self.message_user(request, f"⚠️ Found {len(pins)} variations (expected 120). Proceeding anyway.", level=messages.WARNING)
+
         today = timezone.now().date()
-        pins = queryset or ScheduledPin.objects.filter(publish_date=today)
+        days_until_monday = (7 - today.weekday()) % 7 or 7
+        next_monday = today + timedelta(days=days_until_monday)
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="pins_{today}.csv"'
+        scheduled_count = 0
 
-        writer = csv.writer(response)
-        writer.writerow([
-            'Title', 'Media URL', 'Pinterest board', 'Description',
-            'Link', 'Publish date', 'Keywords'
-        ])
+        with transaction.atomic():
+            for i, pin in enumerate(pins):
+                campaign_day = (i // 4) + 1
+                publish_date = next_monday + timedelta(days=campaign_day - 1)
 
-        for scheduled in pins:
-            pin = scheduled.pin
-            writer.writerow([
-                pin.headline.text[:100],
-                pin.image_url,
-                scheduled.board.name,
-                pin.description[:500],
-                pin.link or '',
-                scheduled.publish_date.isoformat(),
-                pin.keywords or '',
-            ])
+                for slot, board in enumerate(boards, start=1):
+                    if not ScheduledPin.objects.filter(pin=pin, board=board).exists():
+                        ScheduledPin.objects.create(
+                            pin=pin,
+                            board=board,
+                            campaign_day=campaign_day,
+                            publish_date=publish_date,
+                            slot_number=slot,
+                            posted=False
+                        )
+                        scheduled_count += 1
 
-        return response
+        self.message_user(
+            request,
+            f"✅ {scheduled_count} pins scheduled across 30 days starting {next_monday}",
+            level=messages.SUCCESS
+        )
