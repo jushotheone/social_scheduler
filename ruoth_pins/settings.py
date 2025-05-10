@@ -38,15 +38,16 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 print("!!! DATABASE CONFIG !!!")
-print(f"DB NAME: {config('DATABASE_NAME')}")
-print(f"DB USER: {config('DATABASE_USER')}")
-print(f"DB HOST: {config('DATABASE_HOST')}")
+print(f"DB NAME: {config('PGDATABASE', default='postgres')}")
+print(f"DB USER: {config('PGUSER', default='postgres')}")
+print(f"DB HOST: {config('PGHOST', default='localhost')}")
+
 
 if 'runserver' not in sys.argv:
     print("!!! DATABASE CONFIG !!!")
-    print(f"DB NAME: {config('DATABASE_NAME')}")
-    print(f"DB USER: {config('DATABASE_USER')}")
-    print(f"DB HOST: {config('DATABASE_HOST')}")
+    print(f"DB NAME: {config('PGDATABASE', default='postgres')}")
+    print(f"DB USER: {config('PGUSER', default='postgres')}")
+    print(f"DB HOST: {config('PGHOST', default='localhost')}")
 
 
 # Application definition
@@ -103,14 +104,13 @@ WSGI_APPLICATION = 'ruoth_pins.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DATABASE_NAME'),
-        'USER': config('DATABASE_USER'),
-        'PASSWORD': config('DATABASE_PASSWORD'),
-        'HOST': config('DATABASE_HOST', default='localhost'),
-        'PORT': config('DATABASE_PORT', default='5432'),
+        'NAME': config('PGDATABASE', default='postgres'),
+        'USER': config('PGUSER', default='postgres'),
+        'PASSWORD': config('PGPASSWORD'),
+        'HOST': config('PGHOST', default='localhost'),
+        'PORT': config('PGPORT', default='5432'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
