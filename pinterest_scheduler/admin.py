@@ -10,7 +10,7 @@ from datetime import timedelta
 from django.db import transaction
 import csv
 from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin
-from .forms import PinTemplateVariationForm 
+from .forms import PinTemplateVariationForm, ScheduledPinForm
 
 # -----------------------
 # CUSTOM ADMIN ACTIONS
@@ -160,9 +160,29 @@ class BoardAdmin(admin.ModelAdmin):
 # ----------------------
 @admin.register(ScheduledPin)
 class ScheduledPinAdmin(admin.ModelAdmin):
-    list_display = ['pin', 'board', 'publish_date', 'slot_number', 'posted']
+    form = ScheduledPinForm
+    list_display = ['pin', 'board', 'publish_date', 'campaign_day', 'slot_number', 'posted']
     list_filter = ['board', 'publish_date', 'posted']
     actions = ['mark_as_posted', 'export_today_pins_csv', 'schedule_all_pins']
+
+    # ✅ Auto-assign logic for manual entry
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            boards = list(Board.objects.all())[:5]
+            today = timezone.now().date()
+            days_until_monday = (7 - today.weekday()) % 7 or 7
+            next_monday = today + timedelta(days=days_until_monday)
+
+            total_pins = ScheduledPin.objects.filter().count()
+            campaign_day = (total_pins // 20) + 1  # 20 pins per day
+            slot_number = ScheduledPin.objects.filter(campaign_day=campaign_day).count() + 1
+            publish_date = next_monday + timedelta(days=campaign_day - 1)
+
+            obj.campaign_day = campaign_day
+            obj.slot_number = slot_number
+            obj.publish_date = publish_date
+
+        super().save_model(request, obj, form, change)
 
     @admin.action(description="✅ Mark selected pins as posted")
     def mark_as_posted(self, request, queryset):
@@ -170,7 +190,7 @@ class ScheduledPinAdmin(admin.ModelAdmin):
 
     @admin.action(description="📤 Export selected pins (or today’s) to Pinterest CSV")
     def export_today_pins_csv(self, request, queryset):
-        # (same as you already have — no change needed)
+        # Use your existing CSV export code here
         pass
 
     @admin.action(description="📅 Auto-Schedule All Pins (120 variations → 600 pins)")

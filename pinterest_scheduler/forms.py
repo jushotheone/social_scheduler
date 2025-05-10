@@ -1,8 +1,9 @@
 from django import forms
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 from django.utils import timezone
 from datetime import timedelta
-from .models import PinTemplateVariation, Headline, ScheduledPin
+from django.utils.timezone import now
+from .models import PinTemplateVariation, ScheduledPin, Board, Headline
 
 class PinTemplateVariationForm(forms.ModelForm):
     class Meta:
@@ -34,42 +35,41 @@ class PinTemplateVariationForm(forms.ModelForm):
             except Headline.DoesNotExist:
                 pass
 
-# ----------------------
-#  Schedule form
-# ----------------------
-
 
 class ScheduledPinForm(forms.ModelForm):
     class Meta:
         model = ScheduledPin
-        fields = '__all__'
+        fields = ['pin', 'board', 'posted']  # Only user-facing fields
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        pin = self.initial.get('pin') or self.data.get('pin')
+        pin_id = self.initial.get('pin') or self.data.get('pin')
 
-        if pin:
+        if pin_id:
             try:
-                pin_obj = PinTemplateVariation.objects.get(pk=pin)
-                existing = ScheduledPin.objects.filter(pin=pin_obj)
-                boards = Board.objects.all()
-                used_boards = set(existing.values_list('board_id', flat=True))
-                unused_boards = [b for b in boards if b.id not in used_boards]
+                pin = PinTemplateVariation.objects.get(pk=pin_id)
+                scheduled = ScheduledPin.objects.filter(pin=pin).select_related('board').order_by('campaign_day')
 
-                if unused_boards:
-                    self.fields['board'].initial = unused_boards[0]
+                # Show summary of where the pin is already scheduled
+                rows = format_html_join(
+                    '\n',
+                    '<li><b>Board:</b> {} | <b>Day:</b> {} | <b>Date:</b> {}</li>',
+                    [(s.board.name, s.campaign_day, s.publish_date) for s in scheduled]
+                )
+                self.fields['pin'].help_text = format_html(
+                    "<div style='margin-top:10px;padding:10px;background:#f9f9f9;border:1px solid #ddd;'>"
+                    "<b>📋 Already scheduled to:</b><ul>{}</ul></div>",
+                    rows or "<li>No schedules yet.</li>"
+                )
+
+                # Suggest next board only (we no longer need to touch day/date/slot)
+                used_board_ids = {s.board.id for s in scheduled}
+                available_boards = Board.objects.exclude(id__in=used_board_ids)
+                if available_boards.exists():
+                    self.fields['board'].initial = available_boards.first()
                 else:
-                    self.fields['board'].help_text = "⚠️ All boards used for this pin."
-
-                next_day = (existing.count() // 5) + 1
-                today = timezone.now().date()
-                days_until_monday = (7 - today.weekday()) % 7 or 7
-                first_day = today + timedelta(days=days_until_monday)
-                suggested_date = first_day + timedelta(days=next_day - 1)
-
-                self.fields['campaign_day'].initial = next_day
-                self.fields['publish_date'].initial = suggested_date
+                    self.fields['board'].help_text = "⚠️ All boards already used for this pin."
 
             except PinTemplateVariation.DoesNotExist:
                 pass

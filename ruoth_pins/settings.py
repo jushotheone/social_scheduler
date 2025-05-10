@@ -13,6 +13,17 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os  # <-- Added missing import
 from pathlib import Path
 from decouple import config
+import sys
+import logging
+
+# Load environment variables from the.env file
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +36,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Collected static files
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+
+print("!!! DATABASE CONFIG !!!")
+print(f"DB NAME: {config('DATABASE_NAME')}")
+print(f"DB USER: {config('DATABASE_USER')}")
+print(f"DB HOST: {config('DATABASE_HOST')}")
+
+if 'runserver' not in sys.argv:
+    print("!!! DATABASE CONFIG !!!")
+    print(f"DB NAME: {config('DATABASE_NAME')}")
+    print(f"DB USER: {config('DATABASE_USER')}")
+    print(f"DB HOST: {config('DATABASE_HOST')}")
 
 
 # Application definition

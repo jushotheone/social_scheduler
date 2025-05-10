@@ -32,19 +32,20 @@ class PinTemplateVariation(models.Model):
     class Meta:
         unique_together = ('headline', 'variation_number')  # prevent dupes
 
-    def save(self, *args, **kwargs):
-        if self.variation_number is None:
+    def __str__(self):
+        number = self.variation_number
+
+        # Dynamically suggest a variation number even before save
+        if not number and self.pk is None and self.headline_id:
             existing = self.headline.variations.values_list('variation_number', flat=True)
             for i in range(1, 5):
                 if i not in existing:
-                    self.variation_number = i
+                    number = i
                     break
             else:
-                raise ValidationError("This headline already has 4 variations.")
-        super().save(*args, **kwargs)
+                number = "⚠️ Max reached"
 
-    def __str__(self):
-        return f"Variation {self.variation_number} of: {self.headline.text[:40]}"
+        return f"Variation {number or '—'} of: {self.headline.text[:40]}"
 
 
 class Board(models.Model):
