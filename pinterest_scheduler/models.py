@@ -1,4 +1,7 @@
 from django.db import models
+from django.db import IntegrityError
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 class Pillar(models.Model):
     name = models.CharField(max_length=100)
@@ -15,8 +18,9 @@ class Headline(models.Model):
         return f"{self.pillar.name} – {self.text[:40]}"
 
 class PinTemplateVariation(models.Model):
-    headline = models.ForeignKey(Headline, on_delete=models.CASCADE, related_name='variations')
-    image = models.ImageField(upload_to='pins/')
+    headline = models.ForeignKey("Headline", on_delete=models.CASCADE, related_name='variations')
+    variation_number = models.PositiveSmallIntegerField(null=True, blank=True)
+    image_url = models.URLField(default='')
     cta = models.CharField(max_length=100)
     background_style = models.CharField(max_length=100)
     mockup_name = models.CharField(max_length=100)
@@ -24,15 +28,24 @@ class PinTemplateVariation(models.Model):
     description = models.TextField()
     link = models.URLField(blank=True, null=True)
     keywords = models.CharField(max_length=255, blank=True, help_text="Comma-separated keywords")
-    
-    def __str__(self):
-        return f"Variation of: {self.headline.text[:40]}"
 
-    def image_url(self):
-        # Ensure full URL is used in export
-        if self.image and hasattr(self.image, 'url'):
-            return self.image.url
-        return ""
+    class Meta:
+        unique_together = ('headline', 'variation_number')  # prevent dupes
+
+    def save(self, *args, **kwargs):
+        if self.variation_number is None:
+            existing = self.headline.variations.values_list('variation_number', flat=True)
+            for i in range(1, 5):
+                if i not in existing:
+                    self.variation_number = i
+                    break
+            else:
+                raise ValidationError("This headline already has 4 variations.")
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Variation {self.variation_number} of: {self.headline.text[:40]}"
+
 
 class Board(models.Model):
     name = models.CharField(max_length=100)
@@ -45,7 +58,8 @@ class ScheduledPin(models.Model):
     pin = models.ForeignKey(PinTemplateVariation, on_delete=models.CASCADE)
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
     publish_date = models.DateField()
-    slot_number = models.IntegerField()
+    campaign_day = models.PositiveSmallIntegerField(help_text="Campaign day from 1 to 30")
+    slot_number = models.PositiveSmallIntegerField(help_text="Slot position for the day")
     posted = models.BooleanField(default=False)
 
     def __str__(self):
