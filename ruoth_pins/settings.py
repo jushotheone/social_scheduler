@@ -46,11 +46,11 @@ print(f"DB HOST: {config('PGHOST', default='localhost')}")
 # Check if the script is running in a production environment
 
 
-if 'runserver' not in sys.argv:
-    print("!!! DATABASE CONFIG !!!")
-    print(f"DB NAME: {config('PGDATABASE', default='postgres')}")
-    print(f"DB USER: {config('PGUSER', default='postgres')}")
-    print(f"DB HOST: {config('PGHOST', default='localhost')}")
+# if 'runserver' not in sys.argv:
+#     print("!!! DATABASE CONFIG !!!")
+#     print(f"DB NAME: {config('PGDATABASE', default='postgres')}")
+#     print(f"DB USER: {config('PGUSER', default='postgres')}")
+#     print(f"DB HOST: {config('PGHOST', default='localhost')}")
 
 
 # Application definition
