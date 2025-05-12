@@ -48,7 +48,7 @@ class PinTemplateVariation(models.Model):
     badge_icon = models.CharField(max_length=100)
     description = models.TextField()
     link = models.URLField(blank=True, null=True)
-    keywords = models.CharField(max_length=255, blank=True, help_text="Comma-separated keywords")
+    keywords = models.ManyToManyField('Keyword', blank=True, related_name='pin_variations')
 
     class Meta:
         unique_together = ('headline', 'variation_number')  # prevent dupes
@@ -99,3 +99,35 @@ class ScheduledPin(models.Model):
         if not self.campaign:
             self.campaign = self.pin.headline.pillar.campaign
         super().save(*args, **kwargs)
+
+class Keyword(models.Model):
+    phrase = models.CharField(max_length=255, unique=True)
+    currency = models.CharField(max_length=10)
+    avg_monthly_searches = models.PositiveIntegerField()
+    tier = models.CharField(max_length=10, choices=[("high", "High"), ("mid", "Mid"), ("niche", "Niche")])
+    three_month_change = models.CharField(max_length=20)
+    yoy_change = models.CharField(max_length=20)
+    competition = models.CharField(max_length=20)
+    competition_index = models.FloatField()
+    bid_low = models.FloatField()
+    bid_high = models.FloatField()
+
+    # Optional monthly breakdown fields (denormalised)
+    searches_jan = models.PositiveIntegerField(null=True, blank=True)
+    searches_feb = models.PositiveIntegerField(null=True, blank=True)
+    searches_mar = models.PositiveIntegerField(null=True, blank=True)
+    searches_apr = models.PositiveIntegerField(null=True, blank=True)
+    searches_may = models.PositiveIntegerField(null=True, blank=True)
+    searches_jun = models.PositiveIntegerField(null=True, blank=True)
+    searches_jul = models.PositiveIntegerField(null=True, blank=True)
+    searches_aug = models.PositiveIntegerField(null=True, blank=True)
+    searches_sep = models.PositiveIntegerField(null=True, blank=True)
+    searches_oct = models.PositiveIntegerField(null=True, blank=True)
+    searches_nov = models.PositiveIntegerField(null=True, blank=True)
+    searches_dec = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-avg_monthly_searches']
+
+    def __str__(self):
+        return self.phrase

@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.utils import timezone
+from django.shortcuts import render, redirect
 from django.utils.html import format_html
 from django.urls import path
 from django.template.response import TemplateResponse
@@ -9,8 +10,10 @@ from .models import Pillar, Headline
 from datetime import timedelta
 from django.db import transaction
 import csv
-from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin
-from .forms import PinTemplateVariationForm, ScheduledPinForm
+import io
+from decimal import Decimal
+from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword
+from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm
 
 # -----------------------
 # CUSTOM ADMIN ACTIONS
@@ -47,7 +50,12 @@ class PinterestSchedulerAdminSite(admin.AdminSite):
 # ----------------------
 @admin.register(Pillar)
 class PillarAdmin(admin.ModelAdmin):
-    list_display = ['name', 'tagline', 'headline_progress', 'variation_progress']
+    list_display = ['name', 'campaign','tagline', 'headline_progress', 'variation_progress']
+    list_filter = ['campaign']
+
+    def campaign(self, obj):
+        return obj.campaign.name if obj.campaign else "—"
+    campaign.short_description = "Campaign"
 
     def headline_progress(self, obj):
         count = obj.headlines.count()
@@ -91,21 +99,26 @@ class VariationInline(admin.TabularInline):
 class HeadlineAdmin(admin.ModelAdmin):
     list_display = ['pillar', 'text']
     list_filter = ['pillar']
+    search_fields = ['text']
     inlines = [VariationInline]
+
 
 # ----------------------
 # PIN TEMPLATE VARIATION ADMIN (structured with previews + grouping)
 # ----------------------
 @admin.register(PinTemplateVariation)
 class PinTemplateVariationAdmin(admin.ModelAdmin):
-    form = PinTemplateVariationForm 
+    form = PinTemplateVariationForm
     list_display = [
-        'headline_display', 'pillar_preview', 'variation_position', 'thumbnail_preview',
-        'cta', 'mockup_name', 'background_style'
+        'headline_display', 'title', 'pillar_preview', 'variation_position', 'thumbnail_preview',
+        'cta', 'mockup_name', 'background_style', 'keyword_tiers'
     ]
     list_filter = ['headline__pillar', 'headline']
-    search_fields = ['cta', 'mockup_name', 'badge_icon', 'keywords']
+    filter_horizontal = ('keywords',)
+    search_fields = ['cta', 'mockup_name', 'badge_icon', 'keywords__phrase']
     readonly_fields = ['pillar_preview', 'thumbnail_preview', 'variation_progress']
+    list_select_related = ['headline__pillar']
+    actions = ['auto_assign_keywords']
 
     fieldsets = (
         ('🧠 Content & Messaging', {
@@ -148,6 +161,48 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         return f"{obj.headline.pillar.name} — {obj.headline.text[:50]}"
     headline_display.short_description = 'Headline'
 
+    def keyword_tiers(self, obj):
+        return ", ".join(set(k.tier for k in obj.keywords.all()))
+    keyword_tiers.short_description = "Tiers"
+
+    @admin.action(description="🎯 Auto-assign 10 Keywords (3 High, 4 Mid, 3 Niche)")
+    def auto_assign_keywords(self, request, queryset):
+        from collections import defaultdict
+        import random
+        from .models import Keyword  # ensure Keyword is imported
+
+        keywords_by_tier = defaultdict(list)
+        usage_counts = defaultdict(int)
+
+        for k in Keyword.objects.all():
+            keywords_by_tier[k.tier].append(k)
+
+        assigned_total = 0
+        for pin in queryset:
+            pin.keywords.clear()
+
+            def pick_keywords(tier, count, max_usage):
+                pool = [k for k in keywords_by_tier[tier] if usage_counts[k.id] < max_usage]
+                if len(pool) < count:
+                    raise ValueError(f"Not enough keywords in tier: {tier}")
+                selected = random.sample(pool, count)
+                for k in selected:
+                    usage_counts[k.id] += 1
+                return selected
+
+            try:
+                high = pick_keywords('high', 3, 40)
+                mid = pick_keywords('mid', 4, 30)
+                niche = pick_keywords('niche', 3, 20)
+
+                final_keywords = list(set(high + mid + niche))
+                pin.keywords.set(final_keywords)
+                assigned_total += 1
+            except Exception as e:
+                self.message_user(request, f"⚠️ Skipped pin {pin.id}: {e}", level=messages.WARNING)
+
+        self.message_user(request, f"✅ Keywords assigned to {assigned_total} pins.", level=messages.SUCCESS)
+        
 # ----------------------
 # BOARD ADMIN
 # ----------------------
@@ -161,9 +216,11 @@ class BoardAdmin(admin.ModelAdmin):
 @admin.register(ScheduledPin)
 class ScheduledPinAdmin(admin.ModelAdmin):
     form = ScheduledPinForm
-    list_display = ['pin', 'board', 'publish_date', 'campaign_day', 'slot_number', 'posted']
-    list_filter = ['board', 'publish_date', 'posted']
+    list_display = ['pin', 'board', 'campaign', 'publish_date', 'campaign_day', 'slot_number', 'posted'
+    ]
+    list_filter = ['campaign', 'board', 'publish_date', 'posted']
     actions = ['mark_as_posted', 'export_today_pins_csv', 'schedule_all_pins']
+    list_select_related = ['campaign', 'pin', 'board']
 
     # ✅ Auto-assign logic for manual entry
     def save_model(self, request, obj, form, change):
@@ -233,3 +290,113 @@ class ScheduledPinAdmin(admin.ModelAdmin):
             f"✅ {scheduled_count} pins scheduled across 30 days starting {next_monday}",
             level=messages.SUCCESS
         )
+
+class PillarInline(admin.TabularInline):
+    model = Pillar
+    extra = 0
+
+@admin.register(Campaign)
+class CampaignAdmin(admin.ModelAdmin):
+    list_display = ['name', 'start_date', 'end_date']
+    inlines = [PillarInline]
+    search_fields = ['name']
+    ordering = ['start_date']
+
+
+@admin.register(Keyword)
+class KeywordAdmin(admin.ModelAdmin):
+    list_display = ['phrase', 'avg_monthly_searches', 'competition', 'bid_low', 'bid_high']
+    search_fields = ['phrase']
+    list_filter = ['competition']
+    change_list_template = "admin/change_list_with_upload_button.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('upload-csv/', self.admin_site.admin_view(self.process_csv_upload), name='keywords_upload_csv'),
+        ]
+        return custom_urls + urls
+
+    def safe_int(self, val):
+        try:
+            return int(val.replace(',', '')) if val else 0
+        except Exception:
+            return 0
+
+    def safe_float(self, val):
+        try:
+            return float(val.replace(',', '')) if val else 0.0
+        except Exception:
+            return 0.0
+
+    def process_csv_upload(self, request):
+        if request.method == 'POST':
+            form = KeywordCSVUploadForm(request.POST, request.FILES)
+            if form.is_valid():
+                csv_file = form.cleaned_data['csv_file']
+                decoded = csv_file.read().decode('utf-8')
+                reader = csv.DictReader(io.StringIO(decoded))
+
+                added = 0
+                updated = 0
+                errors = 0
+
+                for row in reader:
+                    phrase = row.get('Keyword', '').strip()
+                    if not phrase:
+                        continue
+
+                    try:
+                        volume = self.safe_int(row.get('Avg. monthly searches'))
+
+                        # ✅ NEW LOGIC: Tier classification based on volume
+                        if volume >= 1000:
+                            tier = 'high'
+                        elif 300 <= volume < 1000:
+                            tier = 'mid'
+                        elif 50 <= volume < 300:
+                            tier = 'niche'
+                        else:
+                            tier = 'low'
+
+                        obj, created = Keyword.objects.update_or_create(
+                            phrase=phrase,
+                            defaults={
+                                'currency': row.get('Currency', '').strip(),
+                                'avg_monthly_searches': volume,
+                                'tier': tier,  # ✅ Save the calculated tier
+                                'three_month_change': row.get('Three month change', '').strip(),
+                                'yoy_change': row.get('YoY change', '').strip(),
+                                'competition': row.get('Competition', '').strip(),
+                                'competition_index': self.safe_float(row.get('Competition (indexed)')),
+                                'bid_low': self.safe_float(row.get('Top of page bid (low range)')),
+                                'bid_high': self.safe_float(row.get('Top of page bid (high range)')),
+                                'searches_jan': self.safe_int(row.get('Searches: Jan')),
+                                'searches_feb': self.safe_int(row.get('Searches: Feb')),
+                                'searches_mar': self.safe_int(row.get('Searches: Mar')),
+                                'searches_apr': self.safe_int(row.get('Searches: Apr')),
+                                'searches_may': self.safe_int(row.get('Searches: May')),
+                                'searches_jun': self.safe_int(row.get('Searches: Jun')),
+                                'searches_jul': self.safe_int(row.get('Searches: Jul')),
+                                'searches_aug': self.safe_int(row.get('Searches: Aug')),
+                                'searches_sep': self.safe_int(row.get('Searches: Sep')),
+                                'searches_oct': self.safe_int(row.get('Searches: Oct')),
+                                'searches_nov': self.safe_int(row.get('Searches: Nov')),
+                                'searches_dec': self.safe_int(row.get('Searches: Dec')),
+                            }
+                        )
+                        added += 1 if created else 0
+                        updated += 0 if created else 1
+
+                    except Exception as e:
+                        self.message_user(request, f"❌ Error processing '{phrase}': {e}", level=messages.WARNING)
+                        errors += 1
+
+                self.message_user(
+                    request,
+                    f"✅ {added} added, 🔁 {updated} updated, ⚠️ {errors} errors",
+                    level=messages.SUCCESS
+                )
+                return redirect("..")
+
+        return redirect("..")

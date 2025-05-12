@@ -73,3 +73,6 @@ class ScheduledPinForm(forms.ModelForm):
 
             except PinTemplateVariation.DoesNotExist:
                 pass
+
+class KeywordCSVUploadForm(forms.Form):
+    csv_file = forms.FileField(label="Upload Google Keyword CSV")
