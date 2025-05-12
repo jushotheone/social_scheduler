@@ -39,10 +39,10 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS').split(',')
 
-print("!!! DATABASE CONFIG !!!")
-print(f"DB NAME: {config('PGDATABASE', default='postgres')}")
-print(f"DB USER: {config('PGUSER', default='postgres')}")
-print(f"DB HOST: {config('PGHOST', default='localhost')}")
+# print("!!! DATABASE CONFIG !!!")
+# print(f"DB NAME: {config('PGDATABASE', default='postgres')}")
+# print(f"DB USER: {config('PGUSER', default='postgres')}")
+# print(f"DB HOST: {config('PGHOST', default='localhost')}")
 # Check if the script is running in a production environment
 
 
