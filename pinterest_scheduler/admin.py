@@ -16,7 +16,7 @@ import random
 
 from decimal import Decimal
 from django.db.models import Max
-from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword
+from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword, PinKeywordAssignment
 from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm
 import logging
 
@@ -109,10 +109,36 @@ class HeadlineAdmin(admin.ModelAdmin):
     search_fields = ['text']
     inlines = [VariationInline]
 
+# ----------------------
+# PIN KEYWORD ASSIGNMENT ADMIN (for auto-assigning keywords)
+# ----------------------
+class PinKeywordInline(admin.TabularInline):
+    model = PinKeywordAssignment
+    extra = 0
+    autocomplete_fields = ['keyword']
+    readonly_fields = ['assigned_at', 'auto_assigned']
+
 
 # ----------------------
 # PIN TEMPLATE VARIATION ADMIN (structured with previews + grouping)
 # ----------------------
+
+class HasKeywordsFilter(admin.SimpleListFilter):
+    title = 'Has Keywords'
+    parameter_name = 'has_keywords'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(keywords__isnull=False).distinct()
+        if self.value() == 'no':
+            return queryset.filter(keywords__isnull=True)
+        
 @admin.register(PinTemplateVariation)
 class PinTemplateVariationAdmin(admin.ModelAdmin):
     form = PinTemplateVariationForm
@@ -120,18 +146,19 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
 
     list_display = [
         'headline_display', 'title', 'pillar_preview', 'variation_position', 'thumbnail_preview',
-        'cta', 'mockup_name', 'background_style', 'keyword_tiers'
+        'cta', 'mockup_name', 'background_style', 'keyword_list'
     ]
-    list_filter = ['headline__pillar', 'headline']
-    filter_horizontal = ('keywords',)
-    search_fields = ['cta', 'mockup_name', 'badge_icon', 'keywords__phrase']
+    list_filter = ['headline__pillar', 'headline', HasKeywordsFilter]
+    inlines = [PinKeywordInline]
+    # filter_horizontal = ('keywords',)
+    search_fields = ['cta', 'mockup_name', 'badge_icon']
     readonly_fields = ['pillar_preview', 'thumbnail_preview', 'variation_progress']
     list_select_related = ['headline__pillar']
     actions = ['auto_assign_keywords']
 
     fieldsets = (
         ('🧠 Content & Messaging', {
-            'fields': ('headline', 'pillar_preview', 'title', 'variation_progress', 'description', 'cta', 'keywords'),
+            'fields': ('headline', 'pillar_preview', 'title', 'variation_progress', 'description', 'cta'),
             'description': 'Tells the story for this pin variation — tied to headline and pillar.'
         }),
         ('🎨 Visual Design Details', {
@@ -140,6 +167,39 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         }),
     )
 
+    def headline_display(self, obj):
+        return f"{obj.headline.pillar.name} — {obj.headline.text[:50]}"
+    headline_display.short_description = 'Headline'
+
+    def pillar_preview(self, obj):
+        return obj.headline.pillar.name if obj.headline and obj.headline.pillar else "-"
+    pillar_preview.short_description = 'Pillar'
+
+    def variation_position(self, obj):
+        siblings = list(obj.headline.variations.order_by('id'))
+        if obj.pk in [s.pk for s in siblings]:
+            index = siblings.index(obj) + 1
+            return f"Variation {index} of {len(siblings)}"
+        return "-"
+    variation_position.short_description = 'Variation Position'
+
+    def thumbnail_preview(self, obj):
+        if obj.image_url:
+            return format_html('<img src="{}" style="width: 60px; height:auto;" />', obj.image_url)
+        return "No Image"
+    thumbnail_preview.short_description = 'Thumbnail Preview'
+
+    def variation_progress(self, obj):
+        count = obj.headline.variations.count()
+        if count >= 4:
+            return format_html('<span style="color: red;">⚠️ {}/4 variations created (FULL)</span>', count)
+        else:
+            return format_html('<span style="color: green;">{}/4 variations created</span>', count)
+    variation_progress.short_description = 'Variation Progress'
+
+    @admin.display(description='Keywords')
+    def keyword_list(self, obj):
+        return ', '.join(k.phrase for k in obj.keywords.all())
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -253,72 +313,90 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         return redirect("..")
 
     def auto_assign_keywords(self, request, queryset):
-        keywords_by_tier = defaultdict(list)
-        usage_counts = defaultdict(int)
+        from random import randint
+        from collections import defaultdict
+        import logging
 
-        for k in Keyword.objects.all():
+        logger = logging.getLogger(__name__)
+        keywords_by_tier = defaultdict(list)
+
+        logger.info("🔁 Smart keyword assignment with global rotation")
+
+        # Step 1: Global usage tracker — ALL keywords already in use across the DB
+        global_usage = defaultdict(int)
+        for pin in PinTemplateVariation.objects.prefetch_related('keywords'):
+            for kw in pin.keywords.all():
+                global_usage[kw.id] += 1
+
+        # Step 2: Bucket keywords by tier
+        all_keywords = Keyword.objects.all()
+        for k in all_keywords:
             keywords_by_tier[k.tier].append(k)
 
         assigned_total = 0
+        used_keywords = set()
+
         for pin in queryset:
             pin.keywords.clear()
 
-            def pick_keywords(tier, count, max_usage):
-                pool = [k for k in keywords_by_tier[tier] if usage_counts[k.id] < max_usage]
+            # Smart tier balancing with overflow prevention
+            def smart_mix(max_keywords=7):
+                high = min(len(keywords_by_tier['high']), randint(2, 4))
+                mid = min(len(keywords_by_tier['mid']), randint(1, 2))
+                niche = min(len(keywords_by_tier['niche']), randint(1, 2))
+
+                total = high + mid + niche
+                if total > max_keywords:
+                    overflow = total - max_keywords
+                    while overflow > 0:
+                        if niche > 1:
+                            niche -= 1
+                        elif mid > 1:
+                            mid -= 1
+                        elif high > 2:
+                            high -= 1
+                        overflow -= 1
+                return {'high': high, 'mid': mid, 'niche': niche}
+
+            # Prioritise least-used keywords first
+            def pick_keywords(tier, count):
+                pool = [k for k in keywords_by_tier[tier] if global_usage.get(k.id, 0) == 0]
+                if len(pool) < count:
+                    logger.warning(f"⚠️ Not enough unused {tier}-tier keywords. Allowing reuse.")
+                    pool = sorted(keywords_by_tier[tier], key=lambda k: global_usage.get(k.id, 0))
                 if len(pool) < count:
                     raise ValueError(f"Not enough keywords in tier: {tier}")
-                selected = random.sample(pool, count)
+                selected = pool[:count]
                 for k in selected:
-                    usage_counts[k.id] += 1
+                    global_usage[k.id] += 1
+                    used_keywords.add(k.id)
                 return selected
 
             try:
-                high = pick_keywords('high', 3, 40)
-                mid = pick_keywords('mid', 4, 30)
-                niche = pick_keywords('niche', 3, 20)
-                final_keywords = list(set(high + mid + niche))
-                pin.keywords.set(final_keywords)
+                mix = smart_mix()
+                selected_keywords = (
+                    pick_keywords('high', mix['high']) +
+                    pick_keywords('mid', mix['mid']) +
+                    pick_keywords('niche', mix['niche'])
+                )
+                pin.keywords.set(selected_keywords)
                 assigned_total += 1
             except Exception as e:
                 self.message_user(request, f"⚠️ Skipped pin {pin.id}: {e}", level=messages.WARNING)
 
-        self.message_user(request, f"✅ Keywords assigned to {assigned_total} pins.", level=messages.SUCCESS)
+        self.message_user(
+            request,
+            f"✅ Keywords assigned (smart mix, no overuse) to {assigned_total} pins.",
+            level=messages.SUCCESS
+        )
 
-    auto_assign_keywords.short_description = "🎯 Auto-assign 10 Keywords (3 High, 4 Mid, 3 Niche)"
+        # ✅ Log unused keywords to console
+        unused_keywords = [k.phrase for k in all_keywords if k.id not in used_keywords]
+        logger.info(f"📉 Unused keywords: {len(unused_keywords)}")
+        for phrase in unused_keywords:
+            print(f"🔍 Unused: {phrase}")
 
-    def pillar_preview(self, obj):
-        return obj.headline.pillar.name if obj.headline and obj.headline.pillar else "-"
-    pillar_preview.short_description = 'Pillar'
-
-    def thumbnail_preview(self, obj):
-        if obj.image_url:
-            return format_html('<img src="{}" style="width: 60px; height:auto;" />', obj.image_url)
-        return "No Image"
-    thumbnail_preview.short_description = 'Preview'
-
-    def variation_position(self, obj):
-        siblings = list(obj.headline.variations.order_by('id'))
-        if obj.pk in [s.pk for s in siblings]:
-            index = siblings.index(obj) + 1
-            return f"Variation {index} of {len(siblings)}"
-        return "-"
-    variation_position.short_description = 'Variation'
-
-    def variation_progress(self, obj):
-        count = obj.headline.variations.count()
-        if count >= 4:
-            return format_html('<span style="color: red;">⚠️ {}/4 variations created (FULL)</span>', count)
-        else:
-            return format_html('<span style="color: green;">{}/4 variations created</span>', count)
-    variation_progress.short_description = 'Variation Progress'
-
-    def headline_display(self, obj):
-        return f"{obj.headline.pillar.name} — {obj.headline.text[:50]}"
-    headline_display.short_description = 'Headline'
-
-    def keyword_tiers(self, obj):
-        return ", ".join(set(k.tier for k in obj.keywords.all()))
-    keyword_tiers.short_description = "Tiers"
+    auto_assign_keywords.short_description = "🎯 Smart Assign Keywords (Balanced + Unique)"
 
 # ----------------------
 # BOARD ADMIN
@@ -422,7 +500,7 @@ class CampaignAdmin(admin.ModelAdmin):
 
 @admin.register(Keyword)
 class KeywordAdmin(admin.ModelAdmin):
-    list_display = ['phrase', 'avg_monthly_searches', 'competition', 'bid_low', 'bid_high', 'three_month_change', 'yoy_change', 'tier']
+    list_display = ['phrase', 'avg_monthly_searches', 'competition', 'bid_low', 'bid_high', 'three_month_change', 'used_in_pins', 'yoy_change', 'tier']
     search_fields = ['phrase']
     ordering = ['avg_monthly_searches']
     list_filter = ['competition', 'tier', 'currency', 'three_month_change', 'yoy_change']
@@ -452,6 +530,10 @@ class KeywordAdmin(admin.ModelAdmin):
             return float(val.replace(',', '')) if val else 0.0
         except Exception:
             return 0.0
+        
+    def used_in_pins(self, obj):
+        return obj.pin_variations.count()
+    used_in_pins.short_description = 'Used In Pins'
 
     def process_csv_upload(self, request):
         if request.method == 'POST':

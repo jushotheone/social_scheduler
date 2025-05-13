@@ -47,8 +47,13 @@ class PinTemplateVariation(models.Model):
     mockup_name = models.CharField(max_length=100)
     badge_icon = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
-    link = models.URLField(blank=True, null=True)
-    keywords = models.ManyToManyField('Keyword', blank=True, related_name='pin_variations')
+    link = models.URLField(blank=True, null=True)    
+    keywords = models.ManyToManyField(
+        'Keyword',
+        through='PinKeywordAssignment',
+        related_name='pin_variations',
+        blank=True
+    )
 
     class Meta:
         unique_together = ('headline', 'variation_number')  # prevent dupes
@@ -131,3 +136,16 @@ class Keyword(models.Model):
 
     def __str__(self):
         return self.phrase
+    
+class PinKeywordAssignment(models.Model):
+    pin = models.ForeignKey("PinTemplateVariation", on_delete=models.CASCADE)
+    keyword = models.ForeignKey("Keyword", on_delete=models.CASCADE)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    auto_assigned = models.BooleanField(default=True)
+    relevance_score = models.DecimalField(max_digits=5, decimal_places=2, default=1.0)
+
+    class Meta:
+        unique_together = ('pin', 'keyword')
+
+    def __str__(self):
+        return f"{self.pin} — {self.keyword} ({'auto' if self.auto_assigned else 'manual'})"
