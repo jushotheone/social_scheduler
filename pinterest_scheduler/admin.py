@@ -5,15 +5,22 @@ from django.shortcuts import render, redirect
 from django.utils.html import format_html
 from django.urls import path
 from django.template.response import TemplateResponse
-from django.db.models import Count
+from django.db.models import Count, Q
 from .models import Pillar, Headline
 from datetime import timedelta
 from django.db import transaction
+from collections import defaultdict
 import csv
 import io
+import random
+
 from decimal import Decimal
+from django.db.models import Max
 from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword
 from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm
+import logging
+
+logger = logging.getLogger(__name__)
 
 # -----------------------
 # CUSTOM ADMIN ACTIONS
@@ -109,6 +116,8 @@ class HeadlineAdmin(admin.ModelAdmin):
 @admin.register(PinTemplateVariation)
 class PinTemplateVariationAdmin(admin.ModelAdmin):
     form = PinTemplateVariationForm
+    change_list_template = "admin/change_list_with_upload_button.html"
+
     list_display = [
         'headline_display', 'title', 'pillar_preview', 'variation_position', 'thumbnail_preview',
         'cta', 'mockup_name', 'background_style', 'keyword_tiers'
@@ -130,6 +139,152 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
             'description': 'These control the visual variation for the same message.'
         }),
     )
+
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['upload_url'] = 'admin:upload_pin_variations_csv'
+        extra_context['upload_label'] = 'Upload Pin Variations CSV'
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path("upload-csv/", self.admin_site.admin_view(self.upload_pin_variations_csv), name="upload_pin_variations_csv"),
+        ]
+        return custom_urls + urls
+    
+    logger.info("🔁 upload_pin_variations_csv called")
+
+    def upload_pin_variations_csv(self, request):
+        if request.method == 'POST' and request.FILES.get('csv_file'):
+            csv_file = request.FILES['csv_file']
+            decoded = csv_file.read().decode('utf-8')
+            reader = csv.DictReader(io.StringIO(decoded))
+
+            added, skipped, errors = 0, 0, 0
+
+            for row_num, row in enumerate(reader, start=2):  # header = row 1
+                logger.debug(f"[Row {row_num}] Processing row: {row}")
+                try:
+                    campaign_name = row.get('campaign', '').strip()
+                    pillar_name = row.get('pillar', '').strip()
+                    headline_text = row.get('headline', '').strip().lower()
+                    title = row.get('title', '').strip()
+                    cta = row.get('cta', '').strip()
+                    mockup = row.get('mockup_name', '').strip()
+                    background = row.get('background_style', '').strip()
+                    badge = row.get('badge_icon', '').strip()
+                    image_url = row.get('image_url', '').strip()
+                    description = row.get('description', '').strip()
+                    link = row.get('link', '').strip()
+
+                    if not all([campaign_name, pillar_name, headline_text, title, image_url, description]):
+                        logger.debug(f"[Row {row_num}] Missing required fields: {row}")
+                        skipped += 1
+                        continue
+
+                    try:
+                        campaign = Campaign.objects.get(name=campaign_name)
+                    except Campaign.DoesNotExist:
+                        logger.debug(f"[Row {row_num}] Campaign not found: {campaign_name}")
+                        skipped += 1
+                        continue
+
+                    try:
+                        pillar = Pillar.objects.get(name=pillar_name, campaign=campaign)
+                    except Pillar.DoesNotExist:
+                        logger.debug(f"[Row {row_num}] Pillar not found: {pillar_name}")
+                        skipped += 1
+                        continue
+
+                    headline = Headline.objects.filter(pillar=pillar, text__iexact=headline_text).first()
+
+                    if not headline:
+                        # 🔧 Create the headline if missing
+                        headline = Headline.objects.create(pillar=pillar, text=headline_text.strip())
+                        logger.debug(f"[Row {row_num}] Created new headline: {headline_text}")
+
+                    # 🛡️ Defensive check: skip if a similar variation already exists
+                    variation_exists = PinTemplateVariation.objects.filter(
+                        headline=headline,
+                        cta=cta,
+                        mockup_name=mockup,
+                        background_style=background,
+                    ).filter(
+                        Q(image_url=image_url) |
+                        Q(title=title) |
+                        Q(description=description)
+                    ).exists()
+
+                    if variation_exists:
+                        logger.debug(f"[Row {row_num}] Variation already exists — skipping.")
+                        skipped += 1
+                        continue
+
+                    # Assign next variation number (incremental)
+                    last_number = headline.variations.aggregate(max_num=Max('variation_number'))['max_num'] or 0
+                    variation_number = last_number + 1
+
+
+                    PinTemplateVariation.objects.create(
+                        headline=headline,
+                        variation_number=variation_number,
+                        title=title,
+                        cta=cta,
+                        background_style=background,
+                        mockup_name=mockup,
+                        badge_icon=badge,
+                        image_url=image_url,
+                        description=description,
+                        link=link
+                    )
+                    logger.info(f"[Row {row_num}] ✅ Added variation: {title}")
+                    added += 1
+
+                except Exception as e:
+                    logger.exception(f"[Row {row_num}] ❌ Error adding row: {e}")
+                    errors += 1
+
+            messages.success(request, f"✅ Added: {added} — 🔁 Skipped: {skipped} — ⚠️ Errors: {errors}")
+            return redirect("..")
+
+        messages.warning(request, "No CSV file uploaded.")
+        return redirect("..")
+
+    def auto_assign_keywords(self, request, queryset):
+        keywords_by_tier = defaultdict(list)
+        usage_counts = defaultdict(int)
+
+        for k in Keyword.objects.all():
+            keywords_by_tier[k.tier].append(k)
+
+        assigned_total = 0
+        for pin in queryset:
+            pin.keywords.clear()
+
+            def pick_keywords(tier, count, max_usage):
+                pool = [k for k in keywords_by_tier[tier] if usage_counts[k.id] < max_usage]
+                if len(pool) < count:
+                    raise ValueError(f"Not enough keywords in tier: {tier}")
+                selected = random.sample(pool, count)
+                for k in selected:
+                    usage_counts[k.id] += 1
+                return selected
+
+            try:
+                high = pick_keywords('high', 3, 40)
+                mid = pick_keywords('mid', 4, 30)
+                niche = pick_keywords('niche', 3, 20)
+                final_keywords = list(set(high + mid + niche))
+                pin.keywords.set(final_keywords)
+                assigned_total += 1
+            except Exception as e:
+                self.message_user(request, f"⚠️ Skipped pin {pin.id}: {e}", level=messages.WARNING)
+
+        self.message_user(request, f"✅ Keywords assigned to {assigned_total} pins.", level=messages.SUCCESS)
+
+    auto_assign_keywords.short_description = "🎯 Auto-assign 10 Keywords (3 High, 4 Mid, 3 Niche)"
 
     def pillar_preview(self, obj):
         return obj.headline.pillar.name if obj.headline and obj.headline.pillar else "-"
@@ -165,44 +320,6 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         return ", ".join(set(k.tier for k in obj.keywords.all()))
     keyword_tiers.short_description = "Tiers"
 
-    @admin.action(description="🎯 Auto-assign 10 Keywords (3 High, 4 Mid, 3 Niche)")
-    def auto_assign_keywords(self, request, queryset):
-        from collections import defaultdict
-        import random
-        from .models import Keyword  # ensure Keyword is imported
-
-        keywords_by_tier = defaultdict(list)
-        usage_counts = defaultdict(int)
-
-        for k in Keyword.objects.all():
-            keywords_by_tier[k.tier].append(k)
-
-        assigned_total = 0
-        for pin in queryset:
-            pin.keywords.clear()
-
-            def pick_keywords(tier, count, max_usage):
-                pool = [k for k in keywords_by_tier[tier] if usage_counts[k.id] < max_usage]
-                if len(pool) < count:
-                    raise ValueError(f"Not enough keywords in tier: {tier}")
-                selected = random.sample(pool, count)
-                for k in selected:
-                    usage_counts[k.id] += 1
-                return selected
-
-            try:
-                high = pick_keywords('high', 3, 40)
-                mid = pick_keywords('mid', 4, 30)
-                niche = pick_keywords('niche', 3, 20)
-
-                final_keywords = list(set(high + mid + niche))
-                pin.keywords.set(final_keywords)
-                assigned_total += 1
-            except Exception as e:
-                self.message_user(request, f"⚠️ Skipped pin {pin.id}: {e}", level=messages.WARNING)
-
-        self.message_user(request, f"✅ Keywords assigned to {assigned_total} pins.", level=messages.SUCCESS)
-        
 # ----------------------
 # BOARD ADMIN
 # ----------------------
@@ -309,6 +426,12 @@ class KeywordAdmin(admin.ModelAdmin):
     search_fields = ['phrase']
     list_filter = ['competition']
     change_list_template = "admin/change_list_with_upload_button.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['upload_url'] = 'admin:keywords_upload_csv'
+        extra_context['upload_label'] = 'Upload Keyword CSV'
+        return super().changelist_view(request, extra_context=extra_context)
 
     def get_urls(self):
         urls = super().get_urls()

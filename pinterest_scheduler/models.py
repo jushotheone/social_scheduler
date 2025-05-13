@@ -41,12 +41,12 @@ class PinTemplateVariation(models.Model):
     headline = models.ForeignKey("Headline", on_delete=models.CASCADE, related_name='variations')
     variation_number = models.PositiveSmallIntegerField(null=True, blank=True)
     title = models.CharField(max_length=255, blank=True)  # ✅ Added title field
-    image_url = models.URLField(default='')
+    image_url = models.URLField(max_length=500, default='')
     cta = models.CharField(max_length=100)
     background_style = models.CharField(max_length=100)
     mockup_name = models.CharField(max_length=100)
     badge_icon = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.CharField(max_length=500)
     link = models.URLField(blank=True, null=True)
     keywords = models.ManyToManyField('Keyword', blank=True, related_name='pin_variations')
 

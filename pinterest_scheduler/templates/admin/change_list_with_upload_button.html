@@ -2,10 +2,12 @@
 {% block object-tools-items %}
   {{ block.super }}
   <li>
-    <form action="{% url 'admin:keywords_upload_csv' %}" method="post" enctype="multipart/form-data" style="display:inline;">
+    <form action="{% url upload_url %}" method="post" enctype="multipart/form-data" style="display:inline;">
       {% csrf_token %}
       <input type="file" name="csv_file" accept=".csv" required style="display:inline;">
-      <button type="submit" class="button">Upload CSV</button>
+      <button type="submit" class="button">
+        {{ upload_label|default:"Upload CSV" }}
+      </button>
     </form>
   </li>
 {% endblock %}
