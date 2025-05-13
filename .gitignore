@@ -1,2 +1,9 @@
 .env
 notes.txt
+logs/gunicorn.log
+logs/uwsgi.log
+logs/uwsgi.pid
+logs/uwsgi.sock
+logs/uwsgi.sock.lock
+logs/uwsgi.pid.lock 
+logs/

@@ -2119,3 +2119,412 @@
 [2025-05-13 04:10:08 +0100] [27192] [INFO] Handling signal: int
 [2025-05-13 03:10:08 +0000] [27193] [INFO] Worker exiting (pid: 27193)
 [2025-05-13 04:10:08 +0100] [27192] [INFO] Shutting down: Master
+[2025-05-13 04:23:54 +0100] [36846] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x1032da0c0>
+  on_reload: <function OnReload.on_reload at 0x1032da200>
+  when_ready: <function WhenReady.when_ready at 0x1032da340>
+  pre_fork: <function Prefork.pre_fork at 0x1032da480>
+  post_fork: <function Postfork.post_fork at 0x1032da5c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x1032da700>
+  worker_int: <function WorkerInt.worker_int at 0x1032da840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x1032da980>
+  pre_exec: <function PreExec.pre_exec at 0x1032daac0>
+  pre_request: <function PreRequest.pre_request at 0x1032dac00>
+  post_request: <function PostRequest.post_request at 0x1032daca0>
+  child_exit: <function ChildExit.child_exit at 0x1032dade0>
+  worker_exit: <function WorkerExit.worker_exit at 0x1032daf20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x1032db060>
+  on_exit: <function OnExit.on_exit at 0x1032db1a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x1032db380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-13 04:23:54 +0100] [36846] [INFO] Starting gunicorn 23.0.0
+[2025-05-13 04:23:54 +0100] [36846] [DEBUG] Arbiter booted
+[2025-05-13 04:23:54 +0100] [36846] [INFO] Listening at: http://0.0.0.0:8000 (36846)
+[2025-05-13 04:23:54 +0100] [36846] [INFO] Using worker: sync
+[2025-05-13 04:23:54 +0100] [36847] [INFO] Booting worker with pid: 36847
+[2025-05-13 04:23:54 +0100] [36846] [DEBUG] 1 workers
+[2025-05-13 04:24:46 +0100] [36846] [INFO] Handling signal: int
+[2025-05-13 03:24:46 +0000] [36847] [INFO] Worker exiting (pid: 36847)
+[2025-05-13 04:24:46 +0100] [36846] [INFO] Shutting down: Master
+[2025-05-13 04:24:47 +0100] [37525] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x101afa0c0>
+  on_reload: <function OnReload.on_reload at 0x101afa200>
+  when_ready: <function WhenReady.when_ready at 0x101afa340>
+  pre_fork: <function Prefork.pre_fork at 0x101afa480>
+  post_fork: <function Postfork.post_fork at 0x101afa5c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x101afa700>
+  worker_int: <function WorkerInt.worker_int at 0x101afa840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x101afa980>
+  pre_exec: <function PreExec.pre_exec at 0x101afaac0>
+  pre_request: <function PreRequest.pre_request at 0x101afac00>
+  post_request: <function PostRequest.post_request at 0x101afaca0>
+  child_exit: <function ChildExit.child_exit at 0x101afade0>
+  worker_exit: <function WorkerExit.worker_exit at 0x101afaf20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x101afb060>
+  on_exit: <function OnExit.on_exit at 0x101afb1a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x101afb380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-13 04:24:47 +0100] [37525] [INFO] Starting gunicorn 23.0.0
+[2025-05-13 04:24:47 +0100] [37525] [DEBUG] Arbiter booted
+[2025-05-13 04:24:47 +0100] [37525] [INFO] Listening at: http://0.0.0.0:8000 (37525)
+[2025-05-13 04:24:47 +0100] [37525] [INFO] Using worker: sync
+[2025-05-13 04:24:47 +0100] [37525] [DEBUG] 1 workers
+[2025-05-13 04:24:47 +0100] [37526] [INFO] Booting worker with pid: 37526
+[2025-05-13 03:24:51 +0000] [37526] [DEBUG] GET /admin/pinterest_scheduler/pintemplatevariation/58/change/
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /admin/pinterest_scheduler/pintemplatevariation/58/change/ HTTP/1.1" 200 76637 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/css/base.css
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/css/base.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /admin/jsi18n/
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /admin/jsi18n/ HTTP/1.1" 200 3342 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/css/dark_mode.css
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/css/nav_sidebar.css
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/css/forms.css
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/css/forms.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/js/theme.js
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/js/theme.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/css/responsive.css
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/css/responsive.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/js/vendor/jquery/jquery.js
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/js/core.js
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/js/core.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/js/actions.js
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/js/actions.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/js/admin/RelatedObjectLookups.js
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:52 +0000] [37526] [DEBUG] GET /static/admin/js/jquery.init.js
+127.0.0.1 - - [13/May/2025:03:24:52 +0000] "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/css/widgets.css
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/css/widgets.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/static/admin/css/forms.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/SelectFilter2.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/SelectFilter2.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/SelectBox.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/SelectBox.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/prepopulate.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/urlify.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/urlify.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/vendor/xregexp/xregexp.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/prepopulate_init.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/nav_sidebar.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/img/icon-addlink.svg
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/img/icon-changelink.svg
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/img/icon-viewlink.svg
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:53 +0000] [37526] [DEBUG] GET /static/admin/js/change_form.js
+127.0.0.1 - - [13/May/2025:03:24:53 +0000] "GET /static/admin/js/change_form.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:55 +0000] [37526] [DEBUG] GET /static/admin/img/search.svg
+127.0.0.1 - - [13/May/2025:03:24:55 +0000] "GET /static/admin/img/search.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/static/admin/css/widgets.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:24:55 +0000] [37526] [DEBUG] GET /static/admin/img/selector-icons.svg
+127.0.0.1 - - [13/May/2025:03:24:55 +0000] "GET /static/admin/img/selector-icons.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/static/admin/css/widgets.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 04:31:57 +0100] [37525] [INFO] Handling signal: int
+[2025-05-13 03:31:57 +0000] [37526] [INFO] Worker exiting (pid: 37526)
+[2025-05-13 04:31:57 +0100] [37525] [INFO] Shutting down: Master
+[2025-05-13 04:31:59 +0100] [41228] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x10525e0c0>
+  on_reload: <function OnReload.on_reload at 0x10525e200>
+  when_ready: <function WhenReady.when_ready at 0x10525e340>
+  pre_fork: <function Prefork.pre_fork at 0x10525e480>
+  post_fork: <function Postfork.post_fork at 0x10525e5c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x10525e700>
+  worker_int: <function WorkerInt.worker_int at 0x10525e840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x10525e980>
+  pre_exec: <function PreExec.pre_exec at 0x10525eac0>
+  pre_request: <function PreRequest.pre_request at 0x10525ec00>
+  post_request: <function PostRequest.post_request at 0x10525eca0>
+  child_exit: <function ChildExit.child_exit at 0x10525ede0>
+  worker_exit: <function WorkerExit.worker_exit at 0x10525ef20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x10525f060>
+  on_exit: <function OnExit.on_exit at 0x10525f1a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x10525f380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-13 04:31:59 +0100] [41228] [INFO] Starting gunicorn 23.0.0
+[2025-05-13 04:31:59 +0100] [41228] [DEBUG] Arbiter booted
+[2025-05-13 04:31:59 +0100] [41228] [INFO] Listening at: http://0.0.0.0:8000 (41228)
+[2025-05-13 04:31:59 +0100] [41228] [INFO] Using worker: sync
+[2025-05-13 04:31:59 +0100] [41229] [INFO] Booting worker with pid: 41229
+[2025-05-13 04:31:59 +0100] [41228] [DEBUG] 1 workers
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /admin/pinterest_scheduler/keyword/
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /admin/pinterest_scheduler/keyword/ HTTP/1.1" 200 75738 "http://0.0.0.0:8000/admin/pinterest_scheduler/pintemplatevariation/58/change/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/css/base.css
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /static/admin/css/base.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/css/dark_mode.css
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /admin/jsi18n/
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /admin/jsi18n/ HTTP/1.1" 200 3342 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/js/theme.js
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /static/admin/js/theme.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/css/nav_sidebar.css
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/css/changelists.css
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /static/admin/css/changelists.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/css/responsive.css
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /static/admin/css/responsive.css HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/js/vendor/jquery/jquery.js
+127.0.0.1 - - [13/May/2025:03:32:03 +0000] "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:03 +0000] [41229] [DEBUG] GET /static/admin/js/jquery.init.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/core.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/core.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/admin/RelatedObjectLookups.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/actions.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/actions.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/urlify.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/urlify.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/prepopulate.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/vendor/xregexp/xregexp.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/img/search.svg
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/img/search.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/nav_sidebar.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/js/filters.js
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/js/filters.js HTTP/1.1" 304 0 "http://0.0.0.0:8000/admin/pinterest_scheduler/keyword/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/img/icon-addlink.svg
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/static/admin/css/base.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/img/tooltag-add.svg
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/static/admin/css/base.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/img/sorting-icons.svg
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/static/admin/css/base.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 03:32:04 +0000] [41229] [DEBUG] GET /static/admin/img/icon-viewlink.svg
+127.0.0.1 - - [13/May/2025:03:32:04 +0000] "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 304 0 "http://0.0.0.0:8000/static/admin/css/base.css" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-13 04:32:51 +0100] [41228] [INFO] Handling signal: int
+[2025-05-13 03:32:51 +0000] [41229] [INFO] Worker exiting (pid: 41229)
+[2025-05-13 04:32:51 +0100] [41228] [INFO] Shutting down: Master

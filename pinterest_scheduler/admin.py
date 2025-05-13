@@ -131,7 +131,7 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('🧠 Content & Messaging', {
-            'fields': ('headline', 'pillar_preview', 'variation_progress', 'description', 'cta', 'keywords'),
+            'fields': ('headline', 'pillar_preview', 'title', 'variation_progress', 'description', 'cta', 'keywords'),
             'description': 'Tells the story for this pin variation — tied to headline and pillar.'
         }),
         ('🎨 Visual Design Details', {
@@ -422,9 +422,10 @@ class CampaignAdmin(admin.ModelAdmin):
 
 @admin.register(Keyword)
 class KeywordAdmin(admin.ModelAdmin):
-    list_display = ['phrase', 'avg_monthly_searches', 'competition', 'bid_low', 'bid_high']
+    list_display = ['phrase', 'avg_monthly_searches', 'competition', 'bid_low', 'bid_high', 'three_month_change', 'yoy_change', 'tier']
     search_fields = ['phrase']
-    list_filter = ['competition']
+    ordering = ['avg_monthly_searches']
+    list_filter = ['competition', 'tier', 'currency', 'three_month_change', 'yoy_change']
     change_list_template = "admin/change_list_with_upload_button.html"
 
     def changelist_view(self, request, extra_context=None):
