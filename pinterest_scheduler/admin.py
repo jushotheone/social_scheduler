@@ -19,7 +19,7 @@ from django.db.models import Max
 from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword, PinKeywordAssignment
 from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm
 from pinterest_scheduler.services.exporter import export_scheduled_pins_to_csv
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime, make_aware
 import zipfile
 import logging
 
@@ -772,10 +772,35 @@ def get_filtered_pins(request, target_date):
 @admin.site.admin_view
 def export_today_csv(request):
     date_str = request.GET.get("date")
+    interval_minutes = int(request.GET.get("interval", 60))  # default 1 hour
+    start_str = request.GET.get("start")
+    allow_all_hours = request.GET.get("all_hours") == "1"
+
+    # Parse target date
     target_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else now().date()
+    current_time = localtime(now())
+
+    # Determine staggered start time
+    if start_str:
+        try:
+            hour, minute = map(int, start_str.split(":"))
+            start_time = datetime.combine(target_date, datetime.min.time()).replace(hour=hour, minute=minute)
+            start_time = make_aware(start_time)
+            start_time = localtime(start_time)
+        except ValueError:
+            messages.warning(request, "⚠️ Invalid start time format. Use HH:MM.")
+            return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
+    else:
+        start_time = current_time.replace(hour=current_time.hour, minute=0, second=0, microsecond=0)
+
+    # Ensure timezone-aware start_time
+    start_time = localtime(start_time)
+
+    # Smart gap window (9:00–21:00)
+    smart_start = start_time.replace(hour=9, minute=0)
+    smart_end = start_time.replace(hour=21, minute=0)
 
     pins = get_filtered_pins(request, target_date)
-
     if not pins.exists():
         messages.warning(request, f"⚠️ No scheduled pins found for {target_date}")
         return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
@@ -795,16 +820,25 @@ def export_today_csv(request):
         "Keywords"
     ])
 
-    for pin in pins:
+    for i, pin in enumerate(pins):
+        publish_time = start_time + timedelta(minutes=i * interval_minutes)
+
+        if not allow_all_hours:
+            if publish_time.time() < smart_start.time():
+                continue
+            if publish_time.time() > smart_end.time():
+                messages.warning(request, f"⛔ Export stopped at {publish_time.strftime('%H:%M')} – exceeds 21:00")
+                break
+
         title = pin.pin.title or pin.pin.headline.text[:100]
         writer.writerow([
             pin.board.name,
             title,
             pin.pin.image_url,
-            "",  # Thumbnail only used for videos
+            "",  # placeholder for thumbnail
             pin.pin.description or "",
             pin.pin.link or "",
-            target_date.isoformat(),
+            publish_time.isoformat(),
             ", ".join([kw.phrase for kw in pin.pin.keywords.all()])
         ])
 
@@ -814,17 +848,53 @@ def export_today_csv(request):
 @admin.site.admin_view
 def dry_run_preview(request):
     date_str = request.GET.get("date")
+    interval_minutes = int(request.GET.get("interval", 60))
+    start_str = request.GET.get("start")
+    allow_all_hours = request.GET.get("all_hours") == "1"
+
     target_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else now().date()
+    current_time = localtime(now())
+
+    if start_str:
+        try:
+            hour, minute = map(int, start_str.split(":"))
+            start_time = datetime.combine(target_date, datetime.min.time()).replace(hour=hour, minute=minute)
+            start_time = make_aware(start_time)
+            start_time = localtime(start_time)
+        except ValueError:
+            messages.warning(request, "⚠️ Invalid start time format. Use HH:MM.")
+            return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
+    else:
+        start_time = current_time.replace(hour=current_time.hour, minute=0, second=0, microsecond=0)
+
+    # Make timezone-aware
+    start_time = localtime(start_time)
+
+    # Smart hours: 09:00–21:00
+    smart_start = start_time.replace(hour=9, minute=0)
+    smart_end = start_time.replace(hour=21, minute=0)
 
     pins = get_filtered_pins(request, target_date)
-    messages.info(request, f"📅 Dry run for {target_date}: {pins.count()} pins")
+    if not pins.exists():
+        messages.warning(request, f"⚠️ No scheduled pins found for {target_date}")
+        return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
 
-    for pin in pins:
+    messages.info(request, f"📅 Dry run for {target_date} | {pins.count()} pins")
+
+    for i, pin in enumerate(pins):
+        publish_time = start_time + timedelta(minutes=i * interval_minutes)
+
+        if not allow_all_hours:
+            if publish_time.time() < smart_start.time():
+                continue
+            if publish_time.time() > smart_end.time():
+                messages.warning(request, f"⛔ Preview stopped at {publish_time.strftime('%H:%M')} – exceeds 21:00")
+                break
+
         title = pin.pin.title or pin.pin.headline.text[:60]
-        messages.info(request, f"{pin.publish_date} | {pin.board.name} | {title}")
+        messages.info(request, f"🕒 {publish_time.strftime('%H:%M')} | {pin.board.name} | {title}")
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
-
 
 @admin.site.admin_view
 def bundle_export(request):
