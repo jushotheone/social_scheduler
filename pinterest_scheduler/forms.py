@@ -39,7 +39,7 @@ class PinTemplateVariationForm(forms.ModelForm):
 class ScheduledPinForm(forms.ModelForm):
     class Meta:
         model = ScheduledPin
-        fields = ['pin', 'board', 'posted']  # Only user-facing fields
+        fields = ['pin', 'board']  # Only user-facing fields
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

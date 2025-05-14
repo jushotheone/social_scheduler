@@ -5,13 +5,13 @@ from pinterest_scheduler.models import PinTemplateVariation, ScheduledPin, Board
 from django.db import transaction
 
 class Command(BaseCommand):
-    help = "Auto-schedule 120 variations into 600 pins over 30 days starting from next Monday"
+    help = "SmartLoop schedule: evenly distribute 600 pins over 30 days (20 per day, 5 boards)"
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--reset',
             action='store_true',
-            help='❗ Deletes unposted ScheduledPins before creating fresh ones'
+            help='❗ Delete scheduled/exported pins before recreating schedule'
         )
 
     def handle(self, *args, **options):
@@ -23,11 +23,18 @@ class Command(BaseCommand):
             return
 
         if len(pins) != 120:
-            self.stdout.write(f"⚠️ You currently have {len(pins)} variations. Expected 120.")
+            self.stdout.write(f"⚠️ You currently have {len(pins)} pins. Expected 120.")
 
         if options['reset']:
-            deleted = ScheduledPin.objects.filter(posted=False).delete()
-            self.stdout.write(f"♻️ Reset: {deleted[0]} unposted ScheduledPins deleted.")
+            deleted = ScheduledPin.objects.filter(status__in=['scheduled', 'exported']).delete()
+            self.stdout.write(f"♻️ Reset: {deleted[0]} scheduled/exported pins deleted.")
+
+        # 👇 Build the full set: 120 variations × 5 boards = 600 pins
+        full_pinset = [(pin, board) for pin in pins for board in boards]
+
+        if len(full_pinset) != 600:
+            self.stderr.write("❌ Expected 600 scheduled pins. Check data.")
+            return
 
         # 🔢 Get next Monday
         today = timezone.now().date()
@@ -37,23 +44,28 @@ class Command(BaseCommand):
         scheduled_count = 0
 
         with transaction.atomic():
-            for i, pin in enumerate(pins):
-                campaign_day = (i // 4) + 1  # 4 new pins per day
-                publish_date = next_monday + timedelta(days=campaign_day - 1)
+            for day_offset in range(30):
+                chunk = full_pinset[day_offset * 20 : (day_offset + 1) * 20]
+                publish_date = next_monday + timedelta(days=day_offset)
+                campaign_day = day_offset + 1
 
-                for slot, board in enumerate(boards, start=1):
-                    exists = ScheduledPin.objects.filter(pin=pin, board=board).exists()
+                for slot_number, (pin, board) in enumerate(chunk, start=1):
+                    exists = ScheduledPin.objects.filter(
+                        pin=pin,
+                        board=board,
+                        publish_date=publish_date
+                    ).exists()
                     if not exists:
                         ScheduledPin.objects.create(
                             pin=pin,
                             board=board,
-                            campaign_day=campaign_day,
                             publish_date=publish_date,
-                            slot_number=slot,
-                            posted=False
+                            campaign_day=campaign_day,
+                            slot_number=slot_number,
+                            status='scheduled'
                         )
                         scheduled_count += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f"✅ {scheduled_count} ScheduledPins created across 30 days starting {next_monday}."
+            f"✅ {scheduled_count} SmartLoop pins scheduled — 20/day for 30 days starting {next_monday}"
         ))

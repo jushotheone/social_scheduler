@@ -92,7 +92,17 @@ class ScheduledPin(models.Model):
     publish_date = models.DateField()
     campaign_day = models.PositiveSmallIntegerField(help_text="Campaign day from 1 to 30")
     slot_number = models.PositiveSmallIntegerField(help_text="Slot position for the day")
-    posted = models.BooleanField(default=False)
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('exported', 'Exported'),
+        ('posted', 'Posted'),
+    ]
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='scheduled'
+    )
 
     class Meta:
         ordering = ['publish_date', 'campaign_day', 'slot_number']
