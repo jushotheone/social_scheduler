@@ -19475,3 +19475,744 @@ ModuleNotFoundError: No module named 'pinterest_scheduler.admin_views'
 [2025-05-14 06:48:23 +0100] [32135] [INFO] Handling signal: int
 [2025-05-14 05:48:23 +0000] [32136] [INFO] Worker exiting (pid: 32136)
 [2025-05-14 06:48:24 +0100] [32135] [INFO] Shutting down: Master
+[2025-05-14 06:56:19 +0100] [38168] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x10101e0c0>
+  on_reload: <function OnReload.on_reload at 0x10101e200>
+  when_ready: <function WhenReady.when_ready at 0x10101e340>
+  pre_fork: <function Prefork.pre_fork at 0x10101e480>
+  post_fork: <function Postfork.post_fork at 0x10101e5c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x10101e700>
+  worker_int: <function WorkerInt.worker_int at 0x10101e840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x10101e980>
+  pre_exec: <function PreExec.pre_exec at 0x10101eac0>
+  pre_request: <function PreRequest.pre_request at 0x10101ec00>
+  post_request: <function PostRequest.post_request at 0x10101eca0>
+  child_exit: <function ChildExit.child_exit at 0x10101ede0>
+  worker_exit: <function WorkerExit.worker_exit at 0x10101ef20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x10101f060>
+  on_exit: <function OnExit.on_exit at 0x10101f1a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x10101f380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-14 06:56:19 +0100] [38168] [INFO] Starting gunicorn 23.0.0
+[2025-05-14 06:56:19 +0100] [38168] [DEBUG] Arbiter booted
+[2025-05-14 06:56:19 +0100] [38168] [INFO] Listening at: http://0.0.0.0:8000 (38168)
+[2025-05-14 06:56:19 +0100] [38168] [INFO] Using worker: sync
+[2025-05-14 06:56:19 +0100] [38169] [INFO] Booting worker with pid: 38169
+[2025-05-14 06:56:19 +0100] [38168] [DEBUG] 1 workers
+[2025-05-14 05:56:40 +0000] [38169] [DEBUG] GET /
+127.0.0.1 - - [14/May/2025:05:56:40 +0000] "GET / HTTP/1.1" 404 2314 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-14 06:57:01 +0100] [38168] [INFO] Handling signal: int
+[2025-05-14 05:57:01 +0000] [38169] [ERROR] Error handling request (no URI read)
+Traceback (most recent call last):
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 133, in handle
+    req = next(parser)
+          ^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/parser.py", line 41, in __next__
+    self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 259, in __init__
+    super().__init__(cfg, unreader, peer_addr)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 60, in __init__
+    unused = self.parse(self.unreader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 271, in parse
+    self.get_data(unreader, buf, stop=True)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 262, in get_data
+    data = unreader.read()
+           ^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/unreader.py", line 36, in read
+    d = self.chunk()
+        ^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+    return self.sock.recv(self.mxchunk)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/base.py", line 198, in handle_quit
+    time.sleep(0.1)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/base.py", line 199, in handle_quit
+    sys.exit(0)
+SystemExit: 0
+[2025-05-14 05:57:01 +0000] [38169] [INFO] Worker exiting (pid: 38169)
+[2025-05-14 06:57:01 +0100] [38168] [INFO] Shutting down: Master
+[2025-05-14 06:57:05 +0100] [38611] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x1054ea0c0>
+  on_reload: <function OnReload.on_reload at 0x1054ea200>
+  when_ready: <function WhenReady.when_ready at 0x1054ea340>
+  pre_fork: <function Prefork.pre_fork at 0x1054ea480>
+  post_fork: <function Postfork.post_fork at 0x1054ea5c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x1054ea700>
+  worker_int: <function WorkerInt.worker_int at 0x1054ea840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x1054ea980>
+  pre_exec: <function PreExec.pre_exec at 0x1054eaac0>
+  pre_request: <function PreRequest.pre_request at 0x1054eac00>
+  post_request: <function PostRequest.post_request at 0x1054eaca0>
+  child_exit: <function ChildExit.child_exit at 0x1054eade0>
+  worker_exit: <function WorkerExit.worker_exit at 0x1054eaf20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x1054eb060>
+  on_exit: <function OnExit.on_exit at 0x1054eb1a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x1054eb380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-14 06:57:05 +0100] [38611] [INFO] Starting gunicorn 23.0.0
+[2025-05-14 06:57:05 +0100] [38611] [DEBUG] Arbiter booted
+[2025-05-14 06:57:05 +0100] [38611] [INFO] Listening at: http://0.0.0.0:8000 (38611)
+[2025-05-14 06:57:05 +0100] [38611] [INFO] Using worker: sync
+[2025-05-14 06:57:05 +0100] [38612] [INFO] Booting worker with pid: 38612
+[2025-05-14 06:57:05 +0100] [38611] [DEBUG] 1 workers
+[2025-05-14 05:57:13 +0000] [38612] [DEBUG] GET /
+127.0.0.1 - - [14/May/2025:05:57:13 +0000] "GET / HTTP/1.1" 200 12068 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-14 05:58:21 +0000] [38612] [DEBUG] Closing connection. 
+[2025-05-14 07:03:28 +0100] [38611] [INFO] Handling signal: int
+[2025-05-14 06:03:28 +0000] [38612] [INFO] Worker exiting (pid: 38612)
+[2025-05-14 07:03:28 +0100] [38611] [INFO] Shutting down: Master
+[2025-05-18 19:17:10 +0100] [10717] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x1010fa0c0>
+  on_reload: <function OnReload.on_reload at 0x1010fa200>
+  when_ready: <function WhenReady.when_ready at 0x1010fa340>
+  pre_fork: <function Prefork.pre_fork at 0x1010fa480>
+  post_fork: <function Postfork.post_fork at 0x1010fa5c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x1010fa700>
+  worker_int: <function WorkerInt.worker_int at 0x1010fa840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x1010fa980>
+  pre_exec: <function PreExec.pre_exec at 0x1010faac0>
+  pre_request: <function PreRequest.pre_request at 0x1010fac00>
+  post_request: <function PostRequest.post_request at 0x1010faca0>
+  child_exit: <function ChildExit.child_exit at 0x1010fade0>
+  worker_exit: <function WorkerExit.worker_exit at 0x1010faf20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x1010fb060>
+  on_exit: <function OnExit.on_exit at 0x1010fb1a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x1010fb380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-18 19:17:10 +0100] [10717] [INFO] Starting gunicorn 23.0.0
+[2025-05-18 19:17:10 +0100] [10717] [DEBUG] Arbiter booted
+[2025-05-18 19:17:10 +0100] [10717] [INFO] Listening at: http://0.0.0.0:8000 (10717)
+[2025-05-18 19:17:10 +0100] [10717] [INFO] Using worker: sync
+[2025-05-18 19:17:10 +0100] [10718] [INFO] Booting worker with pid: 10718
+[2025-05-18 19:17:10 +0100] [10717] [DEBUG] 1 workers
+[2025-05-18 18:17:10 +0000] [10718] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/.pyenv/versions/3.11.5/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/lawrenceomolo/social_scheduler/ruoth_pins/ruoth_pins/wsgi.py", line 8, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/django/apps/registry.py", line 124, in populate
+    app_config.ready()
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/django/contrib/admin/apps.py", line 27, in ready
+    self.module.autodiscover()
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/django/contrib/admin/__init__.py", line 52, in autodiscover
+    autodiscover_modules("admin", register_to=site)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/django/utils/module_loading.py", line 58, in autodiscover_modules
+    import_module("%s.%s" % (app_config.name, module_to_search))
+  File "/Users/lawrenceomolo/.pyenv/versions/3.11.5/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/lawrenceomolo/social_scheduler/ruoth_pins/pinterest_scheduler/admin.py", line 19, in <module>
+    from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword, PinKeywordAssignment
+ImportError: cannot import name 'PinKeywordAssignment' from 'pinterest_scheduler.models' (/Users/lawrenceomolo/social_scheduler/ruoth_pins/pinterest_scheduler/models.py)
+[2025-05-18 18:17:10 +0000] [10718] [INFO] Worker exiting (pid: 10718)
+[2025-05-18 19:17:10 +0100] [10717] [ERROR] Worker (pid:10718) exited with code 3
+[2025-05-18 19:17:10 +0100] [10717] [ERROR] Shutting down: Master
+[2025-05-18 19:17:10 +0100] [10717] [ERROR] Reason: Worker failed to boot.
+[2025-05-18 19:18:58 +0100] [11662] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x103dbe0c0>
+  on_reload: <function OnReload.on_reload at 0x103dbe200>
+  when_ready: <function WhenReady.when_ready at 0x103dbe340>
+  pre_fork: <function Prefork.pre_fork at 0x103dbe480>
+  post_fork: <function Postfork.post_fork at 0x103dbe5c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x103dbe700>
+  worker_int: <function WorkerInt.worker_int at 0x103dbe840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x103dbe980>
+  pre_exec: <function PreExec.pre_exec at 0x103dbeac0>
+  pre_request: <function PreRequest.pre_request at 0x103dbec00>
+  post_request: <function PostRequest.post_request at 0x103dbeca0>
+  child_exit: <function ChildExit.child_exit at 0x103dbede0>
+  worker_exit: <function WorkerExit.worker_exit at 0x103dbef20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x103dbf060>
+  on_exit: <function OnExit.on_exit at 0x103dbf1a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x103dbf380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-18 19:18:58 +0100] [11662] [INFO] Starting gunicorn 23.0.0
+[2025-05-18 19:18:58 +0100] [11662] [DEBUG] Arbiter booted
+[2025-05-18 19:18:58 +0100] [11662] [INFO] Listening at: http://0.0.0.0:8000 (11662)
+[2025-05-18 19:18:58 +0100] [11662] [INFO] Using worker: sync
+[2025-05-18 19:18:58 +0100] [11665] [INFO] Booting worker with pid: 11665
+[2025-05-18 19:18:58 +0100] [11662] [DEBUG] 1 workers
+[2025-05-18 18:19:00 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:00 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:07 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:07 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:14 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:14 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:19 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:19 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:24 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:24 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:29 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:30 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:36 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:36 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:41 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:41 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:47 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:47 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:52 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:52 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:19:57 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:19:57 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:06 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:06 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:13 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:13 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:18 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:18 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:25 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:25 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:31 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:31 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:36 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:36 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:43 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:43 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:51 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:51 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:20:58 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:20:58 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:04 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:21:04 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:12 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:21:12 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:17 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:21:17 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:23 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:21:23 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:31 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:21:31 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:40 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:21:40 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:43 +0000] [11665] [DEBUG] GET /admin
+127.0.0.1 - - [18/May/2025:18:21:43 +0000] "GET /admin HTTP/1.1" 301 0 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:21:45 +0000] [11665] [DEBUG] Closing connection. 
+[2025-05-18 18:22:13 +0000] [11665] [DEBUG] Ignored premature client disconnection. No more data after: b'\x16\x03\x01\x06\xd2\x01\x00\x06\xce\x03\x03\x1a\x00\xd8q:B|\xc5\xc10c\x00\xc9\xee-\x92\xf6\xea\xb5\xc6\x05F\x0b\xae\xc4\xee\xde3+\xc7S\x05 V\xaa&of1b\xda\xa8\xa7\xdfO\x9fCQ\x10v\xa3\xe5\\\xd2\xad\xf1\xd33k\x12\x97\x1bcF\xec\x00 \x1a\x1a\x13\x01\x13\x02\x13\x03\xc0+\xc0/\xc0,\xc00\xcc\xa9\xcc\xa8\xc0\x13\xc0\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06e\xba\xba\x00\x00\x00\x10\x00\x0e\x00\x0c\x02h2\x08http/1.1D\xcd\x00\x05\x00\x03\x02h2\xfe\r\x00\xda\x00\x00\x01\x00\x01C\x00 \xd1\xeaB&3\xdd\xc8\xbcTf\xb1\xe6\x89\xe2WG\xb9\xb6\xbf\x9e\xa6?\x18&\xab\x9f]\x9bW\xa5\xd5J\x00\xb05\xe0G\x7fzh/J\x80\xaa0\xbf\x9dC{B`\xe6JW\x16A\xa9\x94\xc4\xc3\x91\xe0nR\x14\xcb\xbd\x8fm=Z?\x9a\x13-K\xf5\xcc\xfe\xf9\xf5\x99\xe4\x13"\x95\xecw\xc2\xda6\xed\xa3n\x84\x15\xa7N\xad6a\x8f\x15\xb2m\xdb\xb7\x04#?\x94\xb3`\xe4\x14\x15e\xbb7\x83\xf7\x04r#\xba!\t\xa6\x84\xed\xf7\xda\r\t\x06\xd4\xea3\xe6\x18Y\x8f\xe7\xb9t\xe93q\xea\xf1\xa5r(,\xd6\x16\x9f`1:qs\x84\xa5h\xd6gT\x95TMR\x0f\x93\x16E\x1a\x8a\xcd\xed6S\xaf{\x93\x0eP\xf8v\xb1m\xffB\n\xd6\x0f`\x97\x85\x16\xc3\xe0\x1f=\x08>\x94\xd3\xcbr\x00\x12\x00\x00\x00\x17\x00\x00\x00\n\x00\x0c\x00\n\xfa\xfa\x11\xec\x00\x1d\x00\x17\x00\x18\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00\x1b\x00\x03\x02\x00\x02\x00\x0b\x00\x02\x01\x00\x00+\x00\x07\x06\xca\xca\x03\x04\x03\x03\x00\x00\x00\x0e\x00\x0c\x00\x00\tlocalhost\x00#\x00\x00\x003\x04\xef\x04\xed\xfa\xfa\x00\x01\x00\x11\xec\x04\xc0_\xe6N\x8d\xe7\x02\xe4\xcbA\xa5\x14\x97\xefq3a\xc7\xa7m\xba\x15\x98\x17\x9dn\x14wx\xf6\xa2\x9biu\x9e\xda\x7f\xac\xa6e\x14\xb2y\xaf\xbal\x8c\xc2\xbc\x195=F\xd5]\xb5\xa4\xcf\xaby\xc6\x8f\nc\xdbw\xcd\x14\xf6Mn\xb2;\xb09\x9fy\x82V"\x83\xaa\xe7\xfa\x8a\x98B\x8cQ\xc6\x00i\x9c\x9f\x9e\xb6\x8a4\xa3\x0b*)\x83#:|IS\xa9\x0c\xf5Wbq\x97\x11\xd1\xc5h\x9c\xa2\xbd\xc2U\xe7$O\x12D\xad\xc9\x95\x1d\x9d\xc7\x80\x0e\xe0\xa6\x19\xb9jm\x00\x1er2\xc1\xe2HP\x1d|3%\x18\x10S\x14$\xc2"\xaa;\xd2\xb3\x9c\xa4\xc7\xb3\xcb\x05\x03\xc1O\x1a\xf9\rL\xd8%\x92\x02l\xf7R+\xa1\xeb\x03*\xd0}$IR\xe6\xe4+\xa6ii\x005kc\x8b&\xf1\xd7\x95~\xa7\x0cn\xb1\xb4\xaf\x83`\xd8\xc6\x9bj[\x88\x0ckT\xe4)\x1f\xc7\xf9\x17\x0e6\xbbM{\x94g(\x95\x971\xa7~\xc2\xb8\xd4\xf6\x13X!\x1d.XQ\xfc, \xc0\xe7\xcf\xdc\xd4\xa4g"3\xe4\x90:\x02\x05\xb9\x1c\xc52C\xe1\xa9\xf5\x87y\xb7Q\x9c\x86\x81J4\xb9\xa6\\W*+\xc9\xb4\xcf \xae`\x92\x9f\xa0\xb81j\xb5N\x04\x87^\xc4\xe6\x18\xca\xb8\x98\xfbl!\x05\xf2\xad\x11\xf1G\'\xb8\x04\x0b\x19k\xaaxbz\x05\x12\xcc\xa4\x80\xb9F\x80\xde\xf1\xaa\xee\x02a;\x9c=\xc8\xca\x9c\x9d\xf84\xc0GL\xed\x17I\xe1\x994\xc6H Y\x85\x8f\x86Fj\x85%-\x88\xc9S\xfcY&Tj\xb4\x83`6\xeb\xd1r;(XX\x1c\x0cW7\x90\xf7\x97+\xf7rvt1LP\x8c\x13DG\xbe\xd81\x0f&\xc4M}%\xac\xf4\xf3\xc0!\xa1\x1c(\xf4\xad<\xe04\xd1\xcc2\xbb\xb25s\xa2\xa8\xc6\x81\t\xe2\x9c\xb5\xf9\xbc\x91U\xb6IN9\x8f\xd9\xe9\x1f\xf6\x08\xcf\xc8\xab\x1f\x9d\xc5\x8d\x9b\xdc.dZ)\xed6\xcd\x9bf\xb1^\xfc[k\xb1\xba\xa1\x86@\x1d\xe9N\x9a\xd5\xc5k\x88U\xed&|\x86u.\x99\xeb)\xeb;\xc0b%\x98ykn\x81\x06\xa9f\x0b\x98u\xa7\xc6\x988\xbc\x10\xfc&Gv\xaa\xf6iw\n\xf2\xbf)2\x92\xcb\x8b\x97\x1c\x96\xb3 U:\x8d\xf0\x0cQ\xd5\x01p\x8c\xb7nd\xc5G\xf6\x8ct\xb6\xb5P\xb6\x8a\xa2\xb5*`e@\xdb\xe3\x8b\x19\x02%\x02\xf0Mw\xa6@P\x03\x10\xad\xdac\xd9\x08q!\xd4,\x85\'\x8f\x02\x12\x9a\x8a\x85!\xf6q\xba\xa1\xc85\x82\x14H\x90b@Put\xb2\x8buX\xb1S\xc0$\xa3\xf3r\x19\xd2WM4U,\x00\xcb>\xf7\xa1\xa7\xd0#\x89\xf76\x8a\xf4\x89f\x8d\xcc\x0b\xb3S\x013z\x08\x90\nZ\x11\x91>+:\x812\x85(\x91\x01n>\xeas\xac\x87\xc0=f\x0b\xdfI\x1f}\x97j\xe7u\xbe\xfaB\xcb\xe2\xdb\xb209l-\x94\x19\xc6R\x81c|\rLXQ\x0ct%@\xe6 h7\xa2\xbb\xfat\xb6\xb4?r\xc1ZZ\xa6\x82E\xbbQ\x0f#+1\xc8i\x03w\xbc\xa2\xe35\xfb\xd9 \xec\xb6\x08W\x94\xa4\x9e\xf1\xb8\xb4\xb1t&\x00\xb8\xdcT\x00kH\xa8(\xfa\x95\xe8BI\xb5\x0b\xac\x1a4s\xfcv\xbb\x0f\x16\x1b\xeb9\x9a\xd6\xd0\xc6\x87\\\x11\x1b\x07\x11\xb9kM\x1eA\xb8k&\xb9\xcaRy\x9a\xcb\x9e\xa5\\MpjI\xa2\x86>a&\x18\x80\x98\x1b\xf3\xf9$\xdbl\xb0\x1eD\x85\xc2K1G\xc3\xbfw\xdb^\xb5\'H\x9d\xb1\xbeJ\x00\xc8\xc4\xab\xc9\x9cU\x85\x0fu\xa6\xd6\xe2B\xbbyN\x84\x85]H!\x13\x0b\xc9\x9d\xb5x\xb3\xa8;c?\x02(\xc8\xb4X\x9cB\xb7+\x12xQ\x10dl4iW\xc9\x05R\xd1\x95?(\x81\xdc\xc2j\xa0w\xbc\xd3d\xc8\xb8j@%\x03h\xe5\x916\xaaq\x82\rp\xa3E\xb6\\\t\x05\x99|"\xc7\x9c$\xbb\xe4\xba\xbc\xcf\x9c\x10^4g\xebB\x96\xae<]i7-\xdd\xcc\xb8\x19\xb5\x01\xd6E\xcfo\x8cH\x12\x91\x1c\xe3L\x1b\x00\xbdH\x03Z\xb6\x0f\x93\x8b\xaa\xc6%\x8e\x11S\x9e\xf7T\x8b\x99f\xcf&"\xb0\x176\x0eC\xb3dz\x8f\x0f\xa2=\x02\xc7\x82\xa6F(\xa2e\xcb4\x96\x8b\xfa\x03\xca\xd2\xa1\xab\xb2\x17!\xa3\xf4X\x1ey\x81M\xcc\x84\x91\xdcYB\xa0<H6)\x86\xa6\xb3\x9ev=\xe7\x95\x87\x96\x88\x8a\x8a<\xb1w\x02F\x99q\xcbU\x9b\n\xee\xa3\x14\x908F\x8a\xa4\xaa\x90fb"x\x84U\xe1\xceix\xa9\xf6*\x87\x1fv}u\x01\xcbKg^V\xa3,\xe8l\x9e\xf8\x07\x80\x84@u\xb1|\xa3$\xdc\x98\xb5\x12\xe6\x04)\xac\xec\x86\xb8\x04\xa4Q\xa2)\xd7;\x14\x03W\xf9_\x01e\xceBD\x7f\x00\xee\xc4L\xc3\xa9\x87o\xdc"\xf3X\xa3\xf2\x99\x8d\x9f\xbb\x8d\xb9\x83\x05n\x1a\xc97\xe9\x12\x00\x1d\x00 \xe8b>\xc6\x99YM\x17z%\xde\xb3\xe9\x0c\x91E0L\x1fy\x87\xcf\xf8&\xaa\xcdtFf-\xe2\t\xff\x01\x00\x01\x00\x00\r\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01\x00-\x00\x02\x01\x01\n\n\x00\x01\x00'
+[2025-05-18 18:22:13 +0000] [11665] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:22:13 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 19:22:31 +0100] [11662] [INFO] Handling signal: int
+[2025-05-18 18:22:31 +0000] [11665] [ERROR] Error handling request (no URI read)
+Traceback (most recent call last):
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 133, in handle
+    req = next(parser)
+          ^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/parser.py", line 41, in __next__
+    self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 259, in __init__
+    super().__init__(cfg, unreader, peer_addr)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 60, in __init__
+    unused = self.parse(self.unreader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 274, in parse
+    line, rbuf = self.read_line(unreader, buf, self.limit_request_line)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 326, in read_line
+    self.get_data(unreader, buf)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/message.py", line 262, in get_data
+    data = unreader.read()
+           ^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/unreader.py", line 36, in read
+    d = self.chunk()
+        ^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+    return self.sock.recv(self.mxchunk)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/base.py", line 198, in handle_quit
+    time.sleep(0.1)
+  File "/Users/lawrenceomolo/social_scheduler/venv/lib/python3.11/site-packages/gunicorn/workers/base.py", line 199, in handle_quit
+    sys.exit(0)
+SystemExit: 0
+[2025-05-18 18:22:31 +0000] [11665] [INFO] Worker exiting (pid: 11665)
+[2025-05-18 19:22:31 +0100] [11662] [INFO] Shutting down: Master
+[2025-05-18 19:27:20 +0100] [14455] [DEBUG] Current configuration:
+  config: ./gunicorn.conf.py
+  wsgi_app: None
+  bind: ['0.0.0.0:8000']
+  backlog: 2048
+  workers: 1
+  worker_class: sync
+  threads: 1
+  worker_connections: 1000
+  max_requests: 0
+  max_requests_jitter: 0
+  timeout: 120
+  graceful_timeout: 30
+  keepalive: 2
+  limit_request_line: 4094
+  limit_request_fields: 100
+  limit_request_field_size: 8190
+  reload: False
+  reload_engine: auto
+  reload_extra_files: []
+  spew: False
+  check_config: False
+  print_config: False
+  preload_app: False
+  sendfile: None
+  reuse_port: False
+  chdir: /Users/lawrenceomolo/social_scheduler/ruoth_pins
+  daemon: False
+  raw_env: []
+  pidfile: None
+  worker_tmp_dir: None
+  user: 501
+  group: 20
+  umask: 0
+  initgroups: False
+  tmp_upload_dir: None
+  secure_scheme_headers: {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+  forwarded_allow_ips: ['127.0.0.1', '::1']
+  accesslog: logs/gunicorn.log
+  disable_redirect_access_to_syslog: False
+  access_log_format: %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
+  errorlog: logs/gunicorn.log
+  loglevel: debug
+  capture_output: False
+  logger_class: gunicorn.glogging.Logger
+  logconfig: None
+  logconfig_dict: {}
+  logconfig_json: None
+  syslog_addr: unix:///var/run/syslog
+  syslog: False
+  syslog_prefix: None
+  syslog_facility: user
+  enable_stdio_inheritance: False
+  statsd_host: None
+  dogstatsd_tags: 
+  statsd_prefix: 
+  proc_name: None
+  default_proc_name: ruoth_pins.wsgi
+  pythonpath: None
+  paste: None
+  on_starting: <function OnStarting.on_starting at 0x1038f20c0>
+  on_reload: <function OnReload.on_reload at 0x1038f2200>
+  when_ready: <function WhenReady.when_ready at 0x1038f2340>
+  pre_fork: <function Prefork.pre_fork at 0x1038f2480>
+  post_fork: <function Postfork.post_fork at 0x1038f25c0>
+  post_worker_init: <function PostWorkerInit.post_worker_init at 0x1038f2700>
+  worker_int: <function WorkerInt.worker_int at 0x1038f2840>
+  worker_abort: <function WorkerAbort.worker_abort at 0x1038f2980>
+  pre_exec: <function PreExec.pre_exec at 0x1038f2ac0>
+  pre_request: <function PreRequest.pre_request at 0x1038f2c00>
+  post_request: <function PostRequest.post_request at 0x1038f2ca0>
+  child_exit: <function ChildExit.child_exit at 0x1038f2de0>
+  worker_exit: <function WorkerExit.worker_exit at 0x1038f2f20>
+  nworkers_changed: <function NumWorkersChanged.nworkers_changed at 0x1038f3060>
+  on_exit: <function OnExit.on_exit at 0x1038f31a0>
+  ssl_context: <function NewSSLContext.ssl_context at 0x1038f3380>
+  proxy_protocol: False
+  proxy_allow_ips: ['127.0.0.1', '::1']
+  keyfile: None
+  certfile: None
+  ssl_version: 2
+  cert_reqs: 0
+  ca_certs: None
+  suppress_ragged_eofs: True
+  do_handshake_on_connect: False
+  ciphers: None
+  raw_paste_global_conf: []
+  permit_obsolete_folding: False
+  strip_header_spaces: False
+  permit_unconventional_http_method: False
+  permit_unconventional_http_version: False
+  casefold_http_method: False
+  forwarder_headers: ['SCRIPT_NAME', 'PATH_INFO']
+  header_map: drop
+[2025-05-18 19:27:20 +0100] [14455] [INFO] Starting gunicorn 23.0.0
+[2025-05-18 19:27:20 +0100] [14455] [DEBUG] Arbiter booted
+[2025-05-18 19:27:20 +0100] [14455] [INFO] Listening at: http://0.0.0.0:8000 (14455)
+[2025-05-18 19:27:20 +0100] [14455] [INFO] Using worker: sync
+[2025-05-18 19:27:20 +0100] [14456] [INFO] Booting worker with pid: 14456
+[2025-05-18 19:27:20 +0100] [14455] [DEBUG] 1 workers
+[2025-05-18 18:27:20 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:20 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:28 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:28 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:31 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:31 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:35 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:35 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:39 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:39 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:43 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:43 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:47 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:47 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:51 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:51 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:55 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:55 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:27:59 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:27:59 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:03 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:03 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:07 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:07 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:12 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:12 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:16 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:16 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:20 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:20 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:24 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:24 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:28 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:28 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:34 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:34 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:42 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:42 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:50 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:50 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:28:57 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:28:57 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 18:29:03 +0000] [14456] [DEBUG] GET /ws/products/12/
+127.0.0.1 - - [18/May/2025:18:29:03 +0000] "GET /ws/products/12/ HTTP/1.1" 404 2379 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+[2025-05-18 19:29:10 +0100] [14455] [INFO] Handling signal: int
+[2025-05-18 18:29:10 +0000] [14456] [INFO] Worker exiting (pid: 14456)
+[2025-05-18 19:29:10 +0100] [14455] [INFO] Shutting down: Master

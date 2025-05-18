@@ -810,15 +810,16 @@ def export_today_csv(request):
 
     writer = csv.writer(response)
     writer.writerow([
-        "Pinterest board",
         "Title",
         "Media URL",
+        "Pinterest board",
         "Thumbnail",
         "Description",
         "Link",
         "Publish date",
         "Keywords"
     ])
+
 
     for i, pin in enumerate(pins):
         publish_time = start_time + timedelta(minutes=i * interval_minutes)
@@ -830,17 +831,18 @@ def export_today_csv(request):
                 messages.warning(request, f"⛔ Export stopped at {publish_time.strftime('%H:%M')} – exceeds 21:00")
                 break
 
-        title = pin.pin.title or pin.pin.headline.text[:100]
+        title = pin.pin.title[:100]
         writer.writerow([
-            pin.board.name,
             title,
             pin.pin.image_url,
-            "",  # placeholder for thumbnail
+            pin.board.name,
+            "",  # Thumbnail
             pin.pin.description or "",
             pin.pin.link or "",
             publish_time.isoformat(),
             ", ".join([kw.phrase for kw in pin.pin.keywords.all()])
         ])
+
 
     return response
 

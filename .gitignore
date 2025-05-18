@@ -7,3 +7,5 @@ logs/uwsgi.sock
 logs/uwsgi.sock.lock
 logs/uwsgi.pid.lock 
 logs/
+logs/gunicorn.log
+gunicorn.log
