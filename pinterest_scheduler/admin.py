@@ -146,6 +146,13 @@ class HasKeywordsFilter(admin.SimpleListFilter):
         if self.value() == 'no':
             return queryset.filter(keywords__isnull=True)
         
+class RepurposedStatusInline(admin.TabularInline):
+    model = RepurposedPostStatus
+    extra = 0
+    fields = ['platform', 'created_at']
+    readonly_fields = ['created_at']
+    show_change_link = False
+
 @admin.register(PinTemplateVariation)
 class PinTemplateVariationAdmin(admin.ModelAdmin):
     form = PinTemplateVariationForm
@@ -157,7 +164,7 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         'repurpose_tiktok', 'repurpose_instagram', 'repurpose_youtube'
     ]
     list_filter = ['headline__pillar', 'headline', HasKeywordsFilter]
-    inlines = [PinKeywordInline]
+    inlines = [PinKeywordInline, RepurposedStatusInline]
     # filter_horizontal = ('keywords',)
     search_fields = ['cta', 'mockup_name', 'badge_icon']
     readonly_fields = ['pillar_preview', 'thumbnail_preview', 'variation_progress']

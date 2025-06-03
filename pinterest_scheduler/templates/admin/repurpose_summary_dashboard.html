@@ -1,4 +1,5 @@
 {% extends "admin/base_site.html" %}
+{% load custom_filters %}
 {% block content %}
 <h1>📊 Repurposing Summary Dashboard</h1>
 
@@ -39,15 +40,16 @@
         <td><strong>{{ row.campaign.name }}</strong></td>
         <td>{{ row.total }}</td>
         {% for p in platforms %}
-          <td>
-            {{ row.platform_counts.p }} /
-            {{ row.total }}
-            {% if row.platform_counts.p >= row.total %}
-              <span class="check">✔</span>
-            {% else %}
-              <span class="cross">✘</span>
-            {% endif %}
-          </td>
+          {% with count=row.platform_counts|get_item:p %}
+            <td>
+              {{ count }} / {{ row.total }}
+              {% if count >= row.total %}
+                <span class="check">✔</span>
+              {% else %}
+                <span class="cross">✘</span>
+              {% endif %}
+            </td>
+          {% endwith %}
         {% endfor %}
       </tr>
     {% endfor %}
