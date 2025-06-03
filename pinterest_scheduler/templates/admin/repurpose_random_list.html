@@ -1,0 +1,143 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+  .pin-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pin-image {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  .pin-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .meta {
+    font-size: 0.85em;
+    color: #444;
+  }
+
+  code.url {
+    font-size: 0.8em;
+    word-break: break-word;
+    color: #0066cc;
+  }
+
+  .admin-link {
+    font-size: 0.85em;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #0066cc;
+  }
+
+  .button {
+    margin-top: 20px;
+  }
+</style>
+
+<h1>🎯 Daily 4 Repurpose Picks (Unique Pillars & Headlines)</h1>
+<h3>🎯 10 Pins Not Yet Repurposed to {{ platform|title }}</h3>
+
+<form id="repurpose-form" method="post" action="">
+
+  {% csrf_token %}
+  <input type="hidden" name="action" value="mark_repurposed_{{ platform }}">
+
+  <div class="pin-list">
+    {% for pin in pins %}
+    <div class="pin-card">
+      <div class="pin-header">
+        <label>
+          <input type="checkbox" name="_selected_action" value="{{ pin.pk }}">
+          <strong>{{ pin.title|truncatechars:50 }}</strong>
+        </label>
+        <div>
+          {% with repins=pin.repurposed_statuses.all %}
+            {% if repins.count == 3 %}
+              <span style="color: green; font-weight: bold;">✅ Fully Repurposed</span>
+            {% else %}
+              <span style="color: orange;">🔄 {{ repins.count }} / 3 platforms</span>
+            {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+      <img src="{{ pin.image_url }}" alt="Pin Image" class="pin-image">
+      <div class="meta">
+        <p><strong>ID:</strong> {{ pin.pk }} • 
+          <a href="{% url 'admin:pinterest_scheduler_pintemplatevariation_change' pin.pk %}" class="admin-link" target="_blank">Edit Pin</a>
+        </p>
+        <p><strong>Pillar:</strong> {{ pin.headline.pillar.name }}</p>
+        <p><strong>CTA:</strong> {{ pin.cta }}</p>
+        <p><strong>Description:</strong> {{ pin.description|truncatechars:120 }}</p>
+        <p><strong>Image URL:</strong><br><code class="url">{{ pin.image_url }}</code></p>
+        <p><strong>Keywords:</strong>
+          {% if pin.keywords.all %}
+            {% for kw in pin.keywords.all %}
+              {{ kw.phrase }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            <em>None assigned</em>
+          {% endif %}
+        </p>
+        <p><strong>Repurposed Status:</strong></p>
+        {% for status in repins %}
+          <small>{{ status.platform }}: {{ status.created_at|timesince }} ago</small><br>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <button class="default button" type="submit">✅ Mark All as Repurposed to {{ platform|title }}</button>
+</form>
+
+<form method="get" action="{% url 'admin:export_today_csv' %}">
+  <input type="hidden" name="campaign" value="{{ request.GET.campaign }}">
+  <input type="hidden" name="date" value="{{ now|date:'Y-m-d' }}">
+  <input type="hidden" name="dry_run" value="1">
+  <button type="submit" class="button">📥 Export List as CSV</button>
+</form>
+
+<script>
+  document.querySelector("#repurpose-form").addEventListener("submit", function (e) {
+    const confirmed = confirm("Are you sure you want to mark all as repurposed?");
+    if (!confirmed) {
+      e.preventDefault();
+      return;
+    }
+
+    // ✅ Auto-select checkboxes
+    document.querySelectorAll("input[name='_selected_action']").forEach(cb => {
+      cb.checked = true;
+    });
+
+    // ✅ After form submits, trigger auto-refresh after short delay
+    setTimeout(() => {
+      location.reload();
+    }, 1500);  // adjust to allow time for Django to save
+  });
+</script>
+
+{% endblock %}

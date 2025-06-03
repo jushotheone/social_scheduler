@@ -159,3 +159,31 @@ class PinKeywordAssignment(models.Model):
 
     def __str__(self):
         return f"{self.pin} — {self.keyword} ({'auto' if self.auto_assigned else 'manual'})"
+
+class RepurposedPostStatus(models.Model):
+    PLATFORM_CHOICES = [
+        ('tiktok', 'TikTok'),
+        ('instagram', 'Instagram'),
+        ('youtube', 'YouTube Shorts'),
+    ]
+
+    variation = models.ForeignKey(
+        'PinTemplateVariation',
+        on_delete=models.CASCADE,
+        related_name='repurposed_statuses'
+    )
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
+    repurposed_at = models.DateTimeField(auto_now_add=True)
+    campaign = models.ForeignKey(
+        'Campaign',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('variation', 'platform')
+        ordering = ['-repurposed_at']
+
+    def __str__(self):
+        return f"{self.variation} → {self.platform.upper()} ✅"

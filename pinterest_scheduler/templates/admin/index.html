@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+  <div class="app-index">
+    <h1>Welcome to Admin</h1>
+    
+    <div class="module">
+      <h2>🔧 Custom Tools</h2>
+      <ul>
+        <li><a href="{% url 'repurpose_dashboard' %}">📊 Repurpose Summary Dashboard</a></li>
+      </ul>
+    </div>
+
+    {{ block.super }}
+  </div>
+{% endblock %}

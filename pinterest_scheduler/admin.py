@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.utils.html import format_html
@@ -16,14 +16,18 @@ import io
 import random
 from decimal import Decimal
 from django.db.models import Max
-from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword, PinKeywordAssignment
+from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword, PinKeywordAssignment, RepurposedPostStatus
 from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm
 from pinterest_scheduler.services.exporter import export_scheduled_pins_to_csv
 from django.utils.timezone import now, localtime, make_aware
 import zipfile
 import logging
+from django.utils.safestring import mark_safe
+
 
 logger = logging.getLogger(__name__)
+
+admin.site.index_template = "admin/index.html"
 
 # -----------------------
 # CUSTOM ADMIN ACTIONS
@@ -149,7 +153,8 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
 
     list_display = [
         'headline_display', 'title', 'pillar_preview', 'variation_position', 'thumbnail_preview',
-        'cta', 'mockup_name', 'background_style', 'keyword_list'
+        'cta', 'mockup_name', 'background_style', 'keyword_list',
+        'repurpose_tiktok', 'repurpose_instagram', 'repurpose_youtube'
     ]
     list_filter = ['headline__pillar', 'headline', HasKeywordsFilter]
     inlines = [PinKeywordInline]
@@ -157,7 +162,14 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
     search_fields = ['cta', 'mockup_name', 'badge_icon']
     readonly_fields = ['pillar_preview', 'thumbnail_preview', 'variation_progress']
     list_select_related = ['headline__pillar']
-    actions = ['auto_assign_keywords', 'smartloop_schedule']
+    actions = [
+        'auto_assign_keywords',
+        'smartloop_schedule',
+        'mark_repurposed_tiktok',
+        'mark_repurposed_instagram',
+        'mark_repurposed_youtube',
+        'mark_repurposed_all',
+    ]
 
     fieldsets = (
         ('🧠 Content & Messaging', {
@@ -214,6 +226,7 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path("upload-csv/", self.admin_site.admin_view(self.upload_pin_variations_csv), name="upload_pin_variations_csv"),
+            path("repurpose/random/", self.admin_site.admin_view(self.random_repurpose_view), name="random_repurpose_view"),
         ]
         return custom_urls + urls
     
@@ -518,6 +531,127 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         
     auto_assign_keywords.short_description = "🎯 Smart Assign Keywords (Balanced + Unique)"
 
+    def _platform_status(self, obj, platform):
+        return "✅" if obj.repurposed_statuses.filter(platform=platform).exists() else "⛔"
+
+    @admin.display(description="TikTok")
+    def repurpose_tiktok(self, obj):
+        return self._platform_status(obj, 'tiktok')
+
+    @admin.display(description="Instagram")
+    def repurpose_instagram(self, obj):
+        return self._platform_status(obj, 'instagram')
+
+    @admin.display(description="YouTube")
+    def repurpose_youtube(self, obj):
+        return self._platform_status(obj, 'youtube')
+
+    @admin.action(description="✅ Mark as repurposed to TikTok")
+    def mark_repurposed_tiktok(self, request, queryset):
+        self._mark_repurposed(request, queryset, 'tiktok')
+
+    @admin.action(description="✅ Mark as repurposed to Instagram")
+    def mark_repurposed_instagram(self, request, queryset):
+        self._mark_repurposed(request, queryset, 'instagram')
+
+    @admin.action(description="✅ Mark as repurposed to YouTube")
+    def mark_repurposed_youtube(self, request, queryset):
+        self._mark_repurposed(request, queryset, 'youtube')
+
+    @admin.action(description="✅ Mark as repurposed to All")
+    def mark_repurposed_all(self, request, queryset):
+        self._mark_repurposed(request, queryset, 'all')
+
+    def _mark_repurposed(self, request, queryset, platform):
+        from pinterest_scheduler.models import RepurposedPostStatus
+
+        if not queryset.exists():
+            selected_ids = request.POST.getlist('_selected_action')
+            queryset = PinTemplateVariation.objects.filter(pk__in=selected_ids)
+
+        added = 0
+        platforms = ['tiktok', 'instagram', 'youtube'] if platform == 'all' else [platform]
+
+        for variation in queryset:
+            for p in platforms:
+                if not RepurposedPostStatus.objects.filter(variation=variation, platform=p).exists():
+                    RepurposedPostStatus.objects.create(
+                        variation=variation,
+                        platform=p,
+                        campaign=variation.headline.pillar.campaign
+                    )
+                    added += 1
+
+        self.message_user(
+            request,
+            f"✅ Marked as repurposed to {', '.join(platforms)} ({queryset.count()} pins × {len(platforms)} platforms)",
+            level=messages.SUCCESS
+        )
+
+    def random_repurpose_view(self, request):
+        from pinterest_scheduler.models import RepurposedPostStatus
+
+        campaign_id = request.GET.get('campaign')
+        platform = request.GET.get("platform", "all")
+
+        if not campaign_id:
+            self.message_user(request, "❌ Campaign ID is required in query params.", level=messages.ERROR)
+            return redirect("..")
+
+        # ✅ Handle POST: Mark selected pins as repurposed
+        if request.method == "POST":
+            selected_ids = request.POST.getlist("_selected_action")
+            if not selected_ids:
+                self.message_user(request, "⚠️ No pins selected.", level=messages.WARNING)
+            else:
+                queryset = PinTemplateVariation.objects.filter(id__in=selected_ids)
+                self._mark_repurposed(request, queryset, platform)
+                self.message_user(request, f"✅ {len(selected_ids)} pins marked as repurposed to {platform.title()}")
+                return redirect(request.get_full_path())  # refresh the page
+
+        # GET mode: Select 4 random pins not fully repurposed
+        qs = PinTemplateVariation.objects.annotate(
+            repurposed_count=Count('repurposed_statuses')
+        ).filter(
+            headline__pillar__campaign_id=campaign_id,
+            repurposed_count__lt=3
+        ).select_related('headline__pillar')
+
+        pins = list(qs)
+        random.shuffle(pins)
+
+        # Ensure unique pillar + headline
+        selected = []
+        used_pillars = set()
+        used_headlines = set()
+
+        for pin in pins:
+            pillar_id = pin.headline.pillar_id
+            headline_id = pin.headline_id
+
+            if pillar_id in used_pillars or headline_id in used_headlines:
+                continue
+
+            selected.append(pin)
+            used_pillars.add(pillar_id)
+            used_headlines.add(headline_id)
+
+            if len(selected) == 4:
+                break
+
+        if len(selected) < 4:
+            self.message_user(request, f"⚠️ Only {len(selected)} eligible unique variations found.", level=messages.WARNING)
+
+        context = {
+            'title': "🎯 Daily 4 Repurpose Picks (Unique Pillars & Headlines)",
+            'pins': selected,
+            'platform': platform,
+            'opts': self.model._meta,
+        }
+        return TemplateResponse(request, "admin/repurpose_random_list.html", context)
+
+
+
 # ----------------------
 # BOARD ADMIN
 # ----------------------
@@ -637,10 +771,64 @@ class PillarInline(admin.TabularInline):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
-    list_display = ['name', 'start_date', 'end_date']
+    list_display = ['name', 'start_date', 'end_date', 'repurpose_summary', 'daily_repurpose_link', 'view_dashboard_link']
     inlines = [PillarInline]
     search_fields = ['name']
     ordering = ['start_date']
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<int:campaign_id>/repurpose-picks/',
+                self.admin_site.admin_view(self.daily_repurpose_redirect),
+                name='campaign-daily-repurpose'
+            ),
+            path(
+                'repurpose-summary/',
+                lambda request: redirect('/admin-tools/repurpose-dashboard/'),
+                name='repurpose_summary_redirect'
+            ),
+        ]
+        return custom_urls + urls
+
+
+    def daily_repurpose_link(self, obj):
+        return format_html(
+            '<a class="button" href="{}">🎯 Daily Repurpose Picks</a>',
+            f"/admin/pinterest_scheduler/pintemplatevariation/repurpose/random/?campaign={obj.id}"
+        )
+    daily_repurpose_link.short_description = "Repurpose Tools"
+    daily_repurpose_link.allow_tags = True
+
+    def daily_repurpose_redirect(self, request, campaign_id):
+        return redirect(f"/admin/pinterest_scheduler/pintemplatevariation/repurpose/random/?campaign={campaign_id}")
+
+    def repurpose_summary(self, obj):
+        total = obj.pillars.prefetch_related('headlines__variations').aggregate(
+            count=Count('headlines__variations')
+        )['count'] or 0
+
+        repurposed = RepurposedPostStatus.objects.filter(campaign=obj).values('variation').distinct().count()
+        percent = int((repurposed / (total * 3)) * 100) if total > 0 else 0
+
+        color = "green" if percent == 100 else "orange" if percent >= 50 else "red"
+        return mark_safe(f'<b style="color:{color}">{percent}% repurposed</b>')
+
+    repurpose_summary.short_description = "🎯 Repurpose Progress"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['repurpose_dashboard_url'] = '/admin/repurpose-dashboard/'
+        return super().changelist_view(request, extra_context=extra_context)
+    
+    def view_dashboard_link(self, obj):
+        return format_html(
+            '<a class="button" href="{}?campaign={}">📊 View Summary Dashboard</a>',
+            '/admin-tools/repurpose-dashboard/',
+            obj.id
+        )
+    view_dashboard_link.short_description = "📈 Dashboard"
 
 
 @admin.register(Keyword)
@@ -946,3 +1134,34 @@ def bundle_export(request):
     response = HttpResponse(buffer, content_type="application/zip")
     response["Content-Disposition"] = f'attachment; filename="scheduled_pins_bundle_{target_date}.zip"'
     return response
+
+@admin.site.admin_view
+def repurpose_summary_dashboard(request):
+    from pinterest_scheduler.models import Campaign, RepurposedPostStatus
+
+    platforms = ['tiktok', 'instagram', 'youtube']
+    rows = []
+
+    for campaign in Campaign.objects.all().order_by('start_date'):
+        total = PinTemplateVariation.objects.filter(
+            headline__pillar__campaign=campaign
+        ).count()
+
+        platform_counts = {}
+        for platform in platforms:
+            repurposed = RepurposedPostStatus.objects.filter(
+                campaign=campaign,
+                platform=platform
+            ).count()
+            platform_counts[platform] = repurposed
+
+        rows.append({
+            'campaign': campaign,
+            'total': total,
+            'platform_counts': platform_counts,
+        })
+
+    return TemplateResponse(request, 'admin/repurpose_summary_dashboard.html', {
+        'rows': rows,
+        'platforms': platforms,
+    })

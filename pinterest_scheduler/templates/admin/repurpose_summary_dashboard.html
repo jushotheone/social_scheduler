@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>📊 Repurposing Summary Dashboard</h1>
+
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+
+  th {
+    background-color: #f4f4f4;
+  }
+
+  .check { color: green; }
+  .cross { color: red; }
+</style>
+
+<table>
+  <thead>
+    <tr>
+      <th>📁 Campaign</th>
+      <th>🎯 Total Pins</th>
+      {% for p in platforms %}
+        <th>{{ p|title }} ✅</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+      <tr>
+        <td><strong>{{ row.campaign.name }}</strong></td>
+        <td>{{ row.total }}</td>
+        {% for p in platforms %}
+          <td>
+            {{ row.platform_counts.p }} /
+            {{ row.total }}
+            {% if row.platform_counts.p >= row.total %}
+              <span class="check">✔</span>
+            {% else %}
+              <span class="cross">✘</span>
+            {% endif %}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
