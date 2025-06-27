@@ -17,7 +17,7 @@ import random
 from decimal import Decimal
 from django.db.models import Max
 from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword, PinKeywordAssignment, RepurposedPostStatus
-from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm
+from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm, CampaignAdminForm
 from pinterest_scheduler.services.exporter import export_scheduled_pins_to_csv
 from django.utils.timezone import now, localtime, make_aware
 import zipfile
@@ -78,7 +78,8 @@ class PillarAdmin(admin.ModelAdmin):
 
     def variation_progress(self, obj):
         total = sum(h.variations.count() for h in obj.headlines.all())
-        return f"{total} / 20"
+        max_allowed = (obj.campaign.max_variations_per_headline or 4) * obj.headlines.count()
+        return f"{total} / {max_allowed}"
     variation_progress.short_description = "Variations"
 
 # ----------------------
@@ -153,6 +154,19 @@ class RepurposedStatusInline(admin.TabularInline):
     readonly_fields = ['created_at']
     show_change_link = False
 
+class CampaignFilter(admin.SimpleListFilter):
+    title = 'Campaign'
+    parameter_name = 'campaign'
+
+    def lookups(self, request, model_admin):
+        from .models import Campaign
+        return [(c.id, c.name) for c in Campaign.objects.all()]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(headline__pillar__campaign__id=self.value())
+        return queryset
+
 @admin.register(PinTemplateVariation)
 class PinTemplateVariationAdmin(admin.ModelAdmin):
     form = PinTemplateVariationForm
@@ -163,7 +177,7 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         'cta', 'mockup_name', 'background_style', 'keyword_list',
         'repurpose_tiktok', 'repurpose_instagram', 'repurpose_youtube'
     ]
-    list_filter = ['headline__pillar', 'headline', HasKeywordsFilter]
+    list_filter = ['headline__pillar', 'headline', HasKeywordsFilter, CampaignFilter]
     inlines = [PinKeywordInline, RepurposedStatusInline]
     # filter_horizontal = ('keywords',)
     search_fields = ['cta', 'mockup_name', 'badge_icon']
@@ -213,10 +227,15 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
 
     def variation_progress(self, obj):
         count = obj.headline.variations.count()
-        if count >= 4:
-            return format_html('<span style="color: red;">⚠️ {}/4 variations created (FULL)</span>', count)
+        max_allowed = (
+            obj.headline.pillar.campaign.max_variations_per_headline
+            if obj.headline.pillar.campaign.max_variations_per_headline is not None
+            else 4
+        )
+        if count >= max_allowed:
+            return format_html('<span style="color: red;">⚠️ {}/{} variations created (FULL)</span>', count, max_allowed)
         else:
-            return format_html('<span style="color: green;">{}/4 variations created</span>', count)
+            return format_html('<span style="color: green;">{}/{} variations created</span>', count, max_allowed)
     variation_progress.short_description = 'Variation Progress'
 
     @admin.display(description='Keywords')
@@ -309,6 +328,17 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
                     last_number = headline.variations.aggregate(max_num=Max('variation_number'))['max_num'] or 0
                     variation_number = last_number + 1
 
+                    # 🛡️ Defensive check: prevent over-creation
+                    existing_count = headline.variations.count()
+                    max_allowed = (
+                        headline.pillar.campaign.max_variations_per_headline
+                        if headline.pillar.campaign.max_variations_per_headline is not None
+                        else 4
+                    )
+                    if existing_count >= max_allowed:
+                        logger.warning(f"[Row {row_num}] Max variations reached ({existing_count}/{max_allowed}) for headline: {headline.text}")
+                        skipped += 1
+                        continue
 
                     PinTemplateVariation.objects.create(
                         headline=headline,
@@ -778,6 +808,7 @@ class PillarInline(admin.TabularInline):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
+    form = CampaignAdminForm 
     list_display = ['name', 'start_date', 'end_date', 'repurpose_summary', 'daily_repurpose_link', 'view_dashboard_link']
     inlines = [PillarInline]
     search_fields = ['name']

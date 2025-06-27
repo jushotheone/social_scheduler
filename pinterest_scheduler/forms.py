@@ -3,7 +3,7 @@ from django.utils.html import format_html, format_html_join
 from django.utils import timezone
 from datetime import timedelta
 from django.utils.timezone import now
-from .models import PinTemplateVariation, ScheduledPin, Board, Headline
+from .models import PinTemplateVariation, ScheduledPin, Board, Headline, Campaign
 
 class PinTemplateVariationForm(forms.ModelForm):
     class Meta:
@@ -76,3 +76,15 @@ class ScheduledPinForm(forms.ModelForm):
 
 class KeywordCSVUploadForm(forms.Form):
     csv_file = forms.FileField(label="Upload Google Keyword CSV")
+
+
+class CampaignAdminForm(forms.ModelForm):
+    class Meta:
+        model = Campaign
+        fields = '__all__'
+
+    def clean_max_variations_per_headline(self):
+        value = self.cleaned_data.get('max_variations_per_headline')
+        if value is None:
+            raise forms.ValidationError("You must set max variations per headline.")
+        return value

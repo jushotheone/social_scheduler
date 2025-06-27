@@ -8,6 +8,8 @@ class Campaign(models.Model):
     description = models.TextField(blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
+    max_variations_per_headline = models.PositiveIntegerField(default=4, help_text="Maximum variations allowed per headline for this campaign") #maximum variations allowed per headline for this campaign
+
 
     class Meta:
         ordering = ['start_date', 'name']
@@ -65,7 +67,12 @@ class PinTemplateVariation(models.Model):
         # Dynamically suggest a variation number even before save
         if not number and self.pk is None and self.headline_id:
             existing = self.headline.variations.values_list('variation_number', flat=True)
-            for i in range(1, 5):
+            campaign_limit = (
+                self.headline.pillar.campaign.max_variations_per_headline
+                if self.headline and self.headline.pillar and self.headline.pillar.campaign
+                else 4
+            )
+            for i in range(1, campaign_limit + 1):
                 if i not in existing:
                     number = i
                     break
