@@ -22,6 +22,8 @@ class Pillar(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='pillars', null=True, blank=True)
     name = models.CharField(max_length=100)
     tagline = models.CharField(max_length=255)
+    daily_pin_quota = models.PositiveSmallIntegerField(default=20, help_text="Total number of pins to post per day across all boards")
+    number_of_boards = models.PositiveSmallIntegerField(default=5, help_text="Number of boards used in this campaign")
 
     class Meta:
         ordering = ['campaign__start_date', 'name']

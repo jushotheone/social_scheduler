@@ -449,14 +449,19 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         for phrase in unused_keywords:
             print(f"🔍 Unused: {phrase}")
 
-    @admin.action(description="📅 SmartLoop: Schedule 120 pins × 5 boards (20/day × 30 days)")
+    @admin.action(description="📅 SmartLoop: Auto-schedule pins across 30 days")
     def smartloop_schedule(self, request, queryset, dry_run=False, preview=False):
         boards = list(Board.objects.all())[:5]
-        pins  = list(PinTemplateVariation.objects.select_related('headline__pillar').all())  # 120 unique
+        pins = list(queryset.select_related('headline__pillar'))
+        print(f"[DEBUG] Selected pins count: {len(pins)}")
 
         # 1. Bucket pins into 6 groups of 20
-        random.shuffle(pins)
-        day_buckets = [pins[i*20:(i+1)*20] for i in range(6)]
+        pin_count = len(pins)
+        repeats_per_pin = 5
+        total_slots = pin_count * repeats_per_pin
+        days = 30
+        pins_per_day = total_slots // days
+        spacing = days // repeats_per_pin 
 
         # 2. Compute next Monday
         today = timezone.now().date()
@@ -470,23 +475,23 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
         # ✅ IMPROVED LOGIC: Each pin 5×, 6-day spaced, full rotation
         random.shuffle(pins)  # shuffle to introduce variety
 
-        for pin_index, pin in enumerate(pins):  # 120 pins
-            for rot in range(5):  # 5 board assignments
-                day_offset = (pin_index + rot * 6) % 30  # 6 days apart
-                pub_date = start + timedelta(days=day_offset)
-                board = boards[rot]  # rotate across boards in order
+        for i, pin in enumerate(pins):
+            for rot in range(repeats_per_pin):
+                day_index = (i + rot * spacing) % days
+                pub_date = start + timedelta(days=day_index)
+                board = boards[rot]
                 schedule_by_day[pub_date].append((pin, board))
                 pillar_diagnostics[pub_date][pin.headline.pillar.name] += 1
 
         # 4. Validate 20 pins/day
-        for pub_date, items in schedule_by_day.items():
-            if len(items) != 20:
+        # 🧪 Soft validation (optional): Warn if days have unusually high pin counts
+        for pub_date, items in sorted(schedule_by_day.items()):
+            if len(items) > pins_per_day + 5:
                 self.message_user(
                     request,
-                    f"❌ Scheduling error: {pub_date} has {len(items)} pins (expected 20).",
-                    level=messages.ERROR
+                    f"⚠️ Scheduling warning: {pub_date} has {len(items)} pins (target ≈ {pins_per_day})",
+                    level=messages.WARNING
                 )
-                return
 
         # 5. Generate CSV preview
         csv_buffer = io.StringIO()
@@ -562,7 +567,7 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
                         )
                 self.message_user(
                     request,
-                    "✅ 600 pins scheduled: 20/day, 6-day spacing, 5× per pin, CSV backup at /tmp/pins_schedule.csv",
+                    f"✅ {total_slots} pins scheduled: ≈{pins_per_day}/day, 6-day spacing, 5× per pin, CSV backup at /tmp/pins_schedule.csv",
                     level=messages.SUCCESS
                 )
         
