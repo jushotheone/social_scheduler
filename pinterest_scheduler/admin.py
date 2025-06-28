@@ -453,7 +453,7 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
     def smartloop_schedule(self, request, queryset, dry_run=False, preview=False):
         boards = list(Board.objects.all())[:5]
         pins = list(queryset.select_related('headline__pillar'))
-        print(f"[DEBUG] Selected pins count: {len(pins)}")
+        logger.info(f"SmartLoop: {len(pins)} pins selected by admin.")
 
         # 1. Bucket pins into 6 groups of 20
         pin_count = len(pins)
