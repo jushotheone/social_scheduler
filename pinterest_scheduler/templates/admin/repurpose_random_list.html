@@ -55,34 +55,107 @@
   .button {
     margin-top: 20px;
   }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px 0 18px;
+  }
+
+  .hook-box {
+    border: 1px dashed #c9c9c9;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fafafa;
+  }
+
+  .hook-text {
+    font-size: 1.05em;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    margin: 0;
+  }
+
+  .hook-meta {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 6px;
+  }
+
+  .btn-secondary {
+    background: #f0f0f0;
+    border: 1px solid #d0d0d0;
+  }
+
+  .btn-danger {
+    background: #fff0f0;
+    border: 1px solid #f2b6b6;
+  }
 </style>
 
-<h3>🎯 10 Pins Not Yet Repurposed to {{ platform|title }}</h3>
+<h3>{{ title }}</h3>
+<p class="meta" style="margin-top:-6px;">Today’s batch: generate hooks first (50 chars max), then post, then mark repurposed.</p>
 
 <form id="repurpose-form" method="post" action="">
 
   {% csrf_token %}
-  <input type="hidden" name="action" value="mark_repurposed_{{ platform }}">
+  <input type="hidden" name="action" value="">
+  <input type="hidden" name="platform" value="{{ platform }}">
+  <input type="hidden" name="force" value="0">
+  <input type="hidden" name="single_id" value="">
+
+  <div class="toolbar">
+    <button class="button btn-secondary" type="submit"
+      onclick="setAction('generate_hooks'); ensureHidden('force','0'); ensureHidden('single_id',''); return true;">
+      ⚡ Generate Hooks (missing only)
+    </button>
+
+    <button class="button btn-danger" type="submit"
+      onclick="setAction('generate_hooks'); ensureHidden('force','1'); ensureHidden('single_id',''); return true;">
+      ♻️ Regenerate Hooks (overwrite)
+    </button>
+
+    <button class="default button" type="submit" onclick="return submitMarkRepurposed();">
+      ✅ Mark Selected as Repurposed to {{ platform|title }}
+    </button>
+  </div>
+  <p class="meta" style="margin:0 0 10px;">Tip: if you don’t tick anything, hook generation applies to today’s 4.</p>
 
   <div class="pin-list">
     {% for pin in pins %}
     <div class="pin-card">
+      {% with repins=pin.repurposed_statuses.all %}
       <div class="pin-header">
         <label>
           <input type="checkbox" name="_selected_action" value="{{ pin.pk }}">
-          <strong>{{ pin.title|truncatechars:50 }}</strong>
+          <strong>{{ pin.title|default:pin.headline.text|truncatechars:50 }}</strong>
         </label>
         <div>
-          {% with repins=pin.repurposed_statuses.all %}
-            {% if repins.count == 3 %}
-              <span style="color: green; font-weight: bold;">✅ Fully Repurposed</span>
-            {% else %}
-              <span style="color: orange;">🔄 {{ repins.count }} / 3 platforms</span>
-            {% endif %}
-          {% endwith %}
+          {% if repins.count == 3 %}
+            <span style="color: green; font-weight: bold;">✅ Fully Repurposed</span>
+          {% else %}
+            <span style="color: orange;">🔄 {{ repins.count }} / 3 platforms</span>
+          {% endif %}
         </div>
       </div>
       <img src="{{ pin.image_url }}" alt="Pin Image" class="pin-image">
+      <div class="hook-box">
+        {% if pin.repurpose_hook %}
+          <p class="hook-text" id="hook-{{ pin.pk }}">{{ pin.repurpose_hook }}</p>
+          <div class="hook-meta" style="margin-top:4px; opacity:0.6;">hook field: {{ pin.repurpose_hook|default:"(empty)"|truncatechars:60 }}</div>
+          <div class="hook-meta">
+            <span style="font-weight:600; color:#16a34a;">AI hook</span>
+            • {{ pin.repurpose_hook|length }}/50 chars
+            {% if pin.repurpose_hook_generated_at %} • generated {{ pin.repurpose_hook_generated_at|timesince }} ago{% endif %}
+            • <a href="#" onclick="copyHook('{{ pin.pk }}'); return false;">Copy</a>
+            • <a href="#" onclick="regenerateOne('{{ pin.pk }}'); return false;">Regenerate</a>
+          </div>
+        {% else %}
+          <p class="hook-text" style="opacity:0.5;">No hook yet</p>
+          <div class="hook-meta">Click “Generate Hooks” above.</div>
+        {% endif %}
+      </div>
       <div class="meta">
         <p><strong>ID:</strong> {{ pin.pk }} • 
           <a href="{% url 'admin:pinterest_scheduler_pintemplatevariation_change' pin.pk %}" class="admin-link" target="_blank">Edit Pin</a>
@@ -105,38 +178,94 @@
           <small>{{ status.platform }}: {{ status.created_at|timesince }} ago</small><br>
         {% endfor %}
       </div>
+      {% endwith %}
     </div>
     {% endfor %}
   </div>
 
-  <button class="default button" type="submit">✅ Mark All as Repurposed to {{ platform|title }}</button>
+  <button class="default button" type="submit" onclick="return submitMarkRepurposed();">✅ Mark Selected as Repurposed to {{ platform|title }}</button>
 </form>
 
-<form method="get" action="{% url 'admin:export_today_csv' %}">
-  <input type="hidden" name="campaign" value="{{ request.GET.campaign }}">
-  <input type="hidden" name="date" value="{{ now|date:'Y-m-d' }}">
-  <input type="hidden" name="dry_run" value="1">
-  <button type="submit" class="button">📥 Export List as CSV</button>
-</form>
+<div class="toolbar" style="margin-top:16px;">
+  <a class="button" href="{{ export_url }}">📥 Export Today’s 4 as CSV</a>
+</div>
+<p class="meta" style="margin-top:6px; opacity:0.85;">
+  Exports the 4 pins shown on this page (ID, title, hook, image_url, link, keywords).
+</p>
 
 <script>
-  document.querySelector("#repurpose-form").addEventListener("submit", function (e) {
-    const confirmed = confirm("Are you sure you want to mark all as repurposed?");
-    if (!confirmed) {
-      e.preventDefault();
-      return;
+  function setAction(val) {
+    const actionInput = document.querySelector("input[name='action']");
+    if (actionInput) actionInput.value = val;
+  }
+
+  function ensureHidden(name, value) {
+    let el = document.querySelector(`input[name='${name}']`);
+    if (!el) {
+      el = document.createElement('input');
+      el.type = 'hidden';
+      el.name = name;
+      document.querySelector('#repurpose-form').appendChild(el);
     }
+    el.value = value;
+  }
 
-    // ✅ Auto-select checkboxes
-    document.querySelectorAll("input[name='_selected_action']").forEach(cb => {
-      cb.checked = true;
-    });
+  function anyChecked() {
+    return Array.from(document.querySelectorAll("input[name='_selected_action']")).some(cb => cb.checked);
+  }
 
-    // ✅ After form submits, trigger auto-refresh after short delay
-    setTimeout(() => {
-      location.reload();
-    }, 1500);  // adjust to allow time for Django to save
-  });
+  function checkAll() {
+    document.querySelectorAll("input[name='_selected_action']").forEach(cb => { cb.checked = true; });
+  }
+
+  function regenerateOne(id) {
+    // Regenerate just one hook (overwrite)
+    // Tick the one checkbox, set action=generate_hooks, force=1, single_id=id
+    document.querySelectorAll("input[name='_selected_action']").forEach(cb => { cb.checked = false; });
+    const cb = document.querySelector(`input[name='_selected_action'][value='${id}']`);
+    if (cb) cb.checked = true;
+
+    setAction('generate_hooks');
+    ensureHidden('force', '1');
+    ensureHidden('single_id', id);
+
+    document.querySelector('#repurpose-form').submit();
+  }
+
+
+  function submitMarkRepurposed() {
+    // Keep your old convenience: if nothing is ticked, select all then mark.
+    if (!anyChecked()) {
+      checkAll();
+    }
+    setAction('mark_repurposed');
+
+    const confirmed = confirm("Are you sure you want to mark the selected pins as repurposed?");
+    if (!confirmed) return false;
+
+    // after submit, refresh to show updated status
+    setTimeout(() => { location.reload(); }, 1500);
+    return true;
+  }
+
+  function copyHook(id) {
+    const el = document.querySelector(`#hook-${id}`);
+    if (!el) return;
+    const text = el.innerText || el.textContent || '';
+    if (!text) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    alert('Hook copied');
+  }
 </script>
 
 {% endblock %}

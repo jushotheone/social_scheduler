@@ -28,6 +28,10 @@ logging.basicConfig(level=logging.INFO)
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+#openai_api_key = config('OPENAI_API_KEY
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_HOOK_MODEL = os.getenv("OPENAI_HOOK_MODEL", "gpt-4.1-mini")
+
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Collected static files

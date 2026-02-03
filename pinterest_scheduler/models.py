@@ -51,7 +51,13 @@ class PinTemplateVariation(models.Model):
     mockup_name = models.CharField(max_length=100)
     badge_icon = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
-    link = models.URLField(blank=True, null=True)    
+    link = models.URLField(blank=True, null=True)
+
+    # Repurpose automation: hook text for short-form video intro (typed title in Motion/FCP)
+    # NOTE: we enforce <= 50 chars in generation logic, but keep a small buffer.
+    repurpose_hook = models.CharField(max_length=60, blank=True, default="")
+    repurpose_hook_generated_at = models.DateTimeField(null=True, blank=True)
+
     keywords = models.ManyToManyField(
         'Keyword',
         through='PinKeywordAssignment',

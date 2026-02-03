@@ -6,7 +6,7 @@ from django.utils.html import format_html
 from urllib.parse import unquote as urlunquote
 from django.urls import path
 from django.template.response import TemplateResponse
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Case, When
 from .models import Pillar, Headline
 from datetime import timedelta, datetime
 from django.db import transaction
@@ -19,10 +19,18 @@ from django.db.models import Max
 from .models import Pillar, Headline, PinTemplateVariation, Board, ScheduledPin, Campaign, Keyword, PinKeywordAssignment, RepurposedPostStatus
 from .forms import PinTemplateVariationForm, ScheduledPinForm, KeywordCSVUploadForm, CampaignAdminForm
 from pinterest_scheduler.services.exporter import export_scheduled_pins_to_csv
+from pinterest_scheduler.services.hook_generator import build_context, generate_hook_openai
 from django.utils.timezone import now, localtime, make_aware
 import zipfile
 import logging
+
 from django.utils.safestring import mark_safe
+from django.conf import settings
+
+try:
+    from openai import OpenAI
+except Exception:  # pragma: no cover
+    OpenAI = None
 
 
 logger = logging.getLogger(__name__)
@@ -173,7 +181,7 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
     change_list_template = "admin/change_list_with_upload_button.html"
 
     list_display = [
-        'headline_display', 'title', 'pillar_preview', 'variation_position', 'thumbnail_preview',
+        'headline_display', 'title', 'repurpose_hook_preview', 'pillar_preview', 'variation_position', 'thumbnail_preview',
         'cta', 'mockup_name', 'background_style', 'keyword_list',
         'repurpose_tiktok', 'repurpose_instagram', 'repurpose_youtube'
     ]
@@ -242,6 +250,11 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
     def keyword_list(self, obj):
         return ', '.join(k.phrase for k in obj.keywords.all())
 
+    @admin.display(description='Hook')
+    def repurpose_hook_preview(self, obj):
+        hook = getattr(obj, 'repurpose_hook', '') or ''
+        return hook[:60] if hook else '—'
+
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context['upload_url'] = 'admin:upload_pin_variations_csv'
@@ -255,8 +268,64 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
             path("repurpose/random/", self.admin_site.admin_view(self.random_repurpose_view), name="random_repurpose_view"),
         ]
         return custom_urls + urls
-    
-    logger.info("🔁 upload_pin_variations_csv called")
+
+    def _get_openai_client(self):
+        """Return an OpenAI client or None if not configured."""
+        api_key = getattr(settings, 'OPENAI_API_KEY', None)
+        if not api_key:
+            logger.error("OPENAI_API_KEY missing in Django settings")
+            return None
+        if OpenAI is None:
+            logger.error("OpenAI SDK import failed (OpenAI is None)")
+            return None
+        try:
+            logger.info("OpenAI client initialised for hook generation")
+            return OpenAI(api_key=api_key)
+        except Exception as e:
+            logger.exception("Failed to init OpenAI client: %s", e)
+            return None
+
+    def _generate_hook(self, pin, recent_hooks=None, max_chars=50):
+        """Generate a punchy hook (<= max_chars) for a PinTemplateVariation.
+
+        Single source of truth: delegates to pinterest_scheduler.services.hook_generator.
+
+        IMPORTANT:
+        - If OpenAI is not configured or generation fails, return an empty string.
+        - We NEVER fall back to headline/title/tagline because that pollutes the DB/UI.
+        """
+        recent_hooks = recent_hooks or []
+
+        pin_id = getattr(pin, 'id', None)
+        logger.info("Hook gen start pin=%s recent_hooks=%s", pin_id, len(recent_hooks))
+
+        # Build canonical context from the model
+        ctx = build_context(pin)
+
+        # If OpenAI isn't available, do not fabricate a "hook".
+        client = self._get_openai_client()
+        if client is None:
+            logger.error("Hook gen skipped pin=%s (no OpenAI client)", pin_id)
+            return ""
+
+        try:
+            hook = generate_hook_openai(
+                context=ctx,
+                client=client,
+                recent_hooks=recent_hooks,
+                max_chars=max_chars,
+            )
+        except Exception as e:
+            logger.exception("Hook gen failed pin=%s: %s", pin_id, e)
+            return ""
+
+        hook = (hook or "").strip()[:max_chars]
+        if hook:
+            logger.info("Hook gen ok pin=%s len=%s", pin_id, len(hook))
+        else:
+            logger.error("Hook gen empty pin=%s", pin_id)
+        return hook
+
 
     def upload_pin_variations_csv(self, request):
         if request.method == 'POST' and request.FILES.get('csv_file'):
@@ -630,6 +699,39 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
             level=messages.SUCCESS
         )
 
+    def _looks_like_real_hook(self, text: str) -> bool:
+        """Heuristic: distinguish a real AI hook from placeholders/labels.
+
+        We treat short labels like "profit/loss question" or "origin of the dish" as NOT a hook.
+        """
+        t = (text or "").strip()
+        if not t:
+            return False
+
+        low = t.lower()
+        # Common placeholder labels / buckets that have shown up in DB
+        banned = {
+            "profit/loss question",
+            "industry stat trivia",
+            "origin of the dish",
+            "ingredient origin or source quiz",
+            "tool-for-task quiz",
+            "hack-or-myth challenge",
+            "flavour pair challenge",
+        }
+        if low in banned:
+            return False
+
+        # Too short to be a hook
+        if len(t) < 18:
+            return False
+
+        # Hooks usually read like a sentence / question
+        if not any(ch in t for ch in ["?", "!", "."]):
+            return False
+
+        return True
+
     def random_repurpose_view(self, request):
         from pinterest_scheduler.models import RepurposedPostStatus
 
@@ -640,16 +742,87 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
             self.message_user(request, "❌ Campaign ID is required in query params.", level=messages.ERROR)
             return redirect("..")
 
-        # ✅ Handle POST: Mark selected pins as repurposed
-        if request.method == "POST":
-            selected_ids = request.POST.getlist("_selected_action")
-            if not selected_ids:
-                self.message_user(request, "⚠️ No pins selected.", level=messages.WARNING)
-            else:
-                queryset = PinTemplateVariation.objects.filter(id__in=selected_ids)
-                self._mark_repurposed(request, queryset, platform)
-                self.message_user(request, f"✅ {len(selected_ids)} pins marked as repurposed to {platform.title()}")
-                return redirect(request.get_full_path())  # refresh the page
+        # ---------------------------
+        # CSV export for the *current* Daily 4 picks
+        # - supports exporting by explicit ids: ?export=1&ids=1,2,3,4
+        # - or exporting the persisted session Daily 4: ?export=1
+        #
+        # IMPORTANT:
+        # - Must be FAST (no hook generation, no random selection)
+        # - Must be deterministic (preserve the Daily 4 order)
+        # ---------------------------
+        if request.GET.get("export") == "1":
+            ids_raw = (request.GET.get("ids") or "").strip()
+            ids = []
+            for part in ids_raw.split(","):
+                part = part.strip()
+                if part.isdigit():
+                    ids.append(int(part))
+
+            # If ids not provided, fall back to the persisted "today's 4" in session
+            today_key = now().date().isoformat()
+            session_key = f"daily4:{campaign_id}:{today_key}"
+            if not ids:
+                ids = request.session.get(session_key) or []
+
+            logger.info("repurpose_random EXPORT start campaign=%s ids=%s", campaign_id, ids)
+
+            if not ids:
+                self.message_user(
+                    request,
+                    "⚠️ No Daily 4 saved for today yet. Refresh the page once, then export.",
+                    level=messages.WARNING,
+                )
+                return redirect(request.get_full_path().split("?")[0] + f"?campaign={campaign_id}")
+
+            # Fetch pins (small set) and preserve the requested order
+            export_qs = (
+                PinTemplateVariation.objects
+                .filter(id__in=ids, headline__pillar__campaign_id=campaign_id)
+                .select_related("headline__pillar", "headline__pillar__campaign")
+                .prefetch_related("keywords")
+            )
+            by_id = {p.id: p for p in export_qs}
+            ordered = [by_id[i] for i in ids if i in by_id]
+
+            csv_buffer = io.StringIO()
+            writer = csv.writer(csv_buffer)
+            writer.writerow([
+                "pin_id",
+                "campaign",
+                "pillar",
+                "headline",
+                "title",
+                "hook",
+                "hook_generated_at",
+                "description",
+                "image_url",
+                "link",
+                "keywords",
+            ])
+
+            for pin in ordered:
+                keywords = ", ".join(k.phrase for k in pin.keywords.all())
+                writer.writerow([
+                    pin.id,
+                    getattr(pin.headline.pillar.campaign, "name", "") if pin.headline_id else "",
+                    getattr(pin.headline.pillar, "name", "") if pin.headline_id else "",
+                    getattr(pin.headline, "text", "") if pin.headline_id else "",
+                    pin.title or "",
+                    (getattr(pin, "repurpose_hook", "") or "").strip(),
+                    getattr(pin, "repurpose_hook_generated_at", "") or "",
+                    pin.description or "",
+                    pin.image_url or "",
+                    pin.link or "",
+                    keywords,
+                ])
+
+            filename = f"daily4_repurpose_picks_campaign_{campaign_id}_{today_key}.csv"
+            resp = HttpResponse(csv_buffer.getvalue(), content_type="text/csv; charset=utf-8")
+            resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+            logger.info("repurpose_random EXPORT ok rows=%s", len(ordered))
+            return resp
 
         # GET mode: Select 4 random pins not fully repurposed
         qs = PinTemplateVariation.objects.annotate(
@@ -659,36 +832,211 @@ class PinTemplateVariationAdmin(admin.ModelAdmin):
             repurposed_count__lt=3
         ).select_related('headline__pillar')
 
-        pins = list(qs)
-        random.shuffle(pins)
+        # Persist "today's 4" so POST/redirect doesn't reshuffle.
+        today_key_daily4 = now().date().isoformat()
+        session_key_daily4 = f"daily4:{campaign_id}:{today_key_daily4}"
+        saved_ids = request.session.get(session_key_daily4) or []
 
-        # Ensure unique pillar + headline
         selected = []
-        used_pillars = set()
-        used_headlines = set()
+        if saved_ids:
+            selected = list(qs.filter(id__in=saved_ids))
+            # Preserve the original order
+            selected_by_id = {p.id: p for p in selected}
+            selected = [selected_by_id[i] for i in saved_ids if i in selected_by_id]
 
-        for pin in pins:
-            pillar_id = pin.headline.pillar_id
-            headline_id = pin.headline_id
+        # If no saved set, pick fresh 4 with unique pillar + headline
+        if len(selected) < 4:
+            pins = list(qs)
+            random.shuffle(pins)
 
-            if pillar_id in used_pillars or headline_id in used_headlines:
-                continue
+            used_pillars = set()
+            used_headlines = set()
+            picked = []
 
-            selected.append(pin)
-            used_pillars.add(pillar_id)
-            used_headlines.add(headline_id)
+            for pin in pins:
+                pillar_id = pin.headline.pillar_id
+                headline_id = pin.headline_id
 
-            if len(selected) == 4:
-                break
+                if pillar_id in used_pillars or headline_id in used_headlines:
+                    continue
+
+                picked.append(pin)
+                used_pillars.add(pillar_id)
+                used_headlines.add(headline_id)
+
+                if len(picked) == 4:
+                    break
+
+            selected = picked
+            request.session[session_key_daily4] = [p.id for p in selected]
 
         if len(selected) < 4:
             self.message_user(request, f"⚠️ Only {len(selected)} eligible unique variations found.", level=messages.WARNING)
 
+        # ✅ Auto-generate missing hooks for today's 4 (GET)
+        # Keeps your workflow fast: open the page and hooks are ready.
+        try:
+            logger.info("repurpose_random GET auto-gen start selected=%s", len(selected))
+            recent_hooks = list(
+                PinTemplateVariation.objects.exclude(repurpose_hook__isnull=True)
+                .exclude(repurpose_hook='')
+                .order_by('-repurpose_hook_generated_at')
+                .values_list('repurpose_hook', flat=True)[:20]
+            )
+
+            auto_updated = 0
+            for p in selected:
+                logger.info("repurpose_random GET auto-gen check pin=%s", getattr(p, "id", None))
+                current = (getattr(p, 'repurpose_hook', '') or '').strip()
+                if current and self._looks_like_real_hook(current):
+                    logger.info("repurpose_random GET auto-gen skip pin=%s (already real hook)", getattr(p, "id", None))
+                    recent_hooks.append(current)
+                    continue
+
+                hook = (self._generate_hook(p, recent_hooks=recent_hooks, max_chars=50) or "").strip()
+                if not hook:
+                    logger.error("repurpose_random GET auto-gen failed pin=%s (empty hook)", getattr(p, "id", None))
+                    # Don't save junk / placeholders. Leave it empty so UI shows "No hook yet".
+                    continue
+
+                if hasattr(p, 'repurpose_hook'):
+                    p.repurpose_hook = hook
+                if hasattr(p, 'repurpose_hook_generated_at'):
+                    p.repurpose_hook_generated_at = now()
+
+                p.save(update_fields=['repurpose_hook', 'repurpose_hook_generated_at'])
+                # Ensure the object used by the template has the new values
+                p.repurpose_hook = hook
+                p.repurpose_hook_generated_at = now()
+                logger.info("repurpose_random GET auto-gen saved pin=%s hook_len=%s", getattr(p, "id", None), len(hook))
+                recent_hooks.append(hook)
+                auto_updated += 1
+
+            if auto_updated:
+                self.message_user(request, f"✅ Auto-generated {auto_updated} hooks for today.", level=messages.SUCCESS)
+        except Exception as e:
+            # Never break the page if hook generation fails.
+            logger.exception("repurpose_random GET auto-gen exception: %s", e)
+
+        # ✅ Handle POST actions:
+        # - mark repurposed (existing)
+        # - generate hooks (new)
+        if request.method == "POST":
+            logger.info("repurpose_random POST path=%s", request.path)
+            logger.info("repurpose_random POST keys=%s", list(request.POST.keys()))
+            logger.info("repurpose_random POST action=%s", request.POST.get("action"))
+            logger.info("repurpose_random POST generate_hooks=%s", request.POST.get("generate_hooks"))
+            logger.info("repurpose_random POST regenerate=%s", request.POST.get("regenerate"))
+            logger.info("repurpose_random POST force=%s", request.POST.get("force"))
+            logger.info("repurpose_random POST single_id=%s", request.POST.get("single_id"))
+            selected_ids = request.POST.getlist("_selected_action")
+            logger.info("repurpose_random selected_ids=%s", selected_ids)
+
+            # Action detection (works even if template isn't updated)
+            action = (request.POST.get("action") or "").strip()
+            if not action:
+                # If a submit button named generate_hooks was used
+                if "generate_hooks" in request.POST:
+                    action = "generate_hooks"
+                else:
+                    action = "mark_repurposed"
+            logger.info("repurpose_random resolved action=%s", action)
+
+            force = request.POST.get("force") == "1" or request.POST.get("regenerate") == "1"
+            logger.info("repurpose_random force=%s", force)
+
+            if action == "generate_hooks":
+                # If user ticked checkboxes, use those; otherwise generate for today's 4.
+                if selected_ids:
+                    queryset = (
+                        PinTemplateVariation.objects
+                        .filter(id__in=selected_ids)
+                        .select_related("headline__pillar", "headline__pillar__campaign")
+                    )
+                else:
+                    queryset = (
+                        PinTemplateVariation.objects
+                        .filter(id__in=[p.id for p in selected])
+                        .select_related("headline__pillar", "headline__pillar__campaign")
+                    )
+
+                # Optional single regenerate support (template JS can post single_id)
+                single_id = (request.POST.get("single_id") or "").strip()
+                if single_id:
+                    queryset = (
+                        PinTemplateVariation.objects
+                        .filter(id=single_id)
+                        .select_related("headline__pillar", "headline__pillar__campaign")
+                    )
+
+                logger.info("repurpose_random generate_hooks queryset_count=%s", queryset.count())
+
+                # Pull recent hooks to avoid repeats
+                recent_hooks = list(
+                    PinTemplateVariation.objects
+                    .exclude(repurpose_hook__isnull=True)
+                    .exclude(repurpose_hook='')
+                    .order_by('-repurpose_hook_generated_at')
+                    .values_list('repurpose_hook', flat=True)[:30]
+                )
+
+                updated, skipped, failed = 0, 0, 0
+
+                for pin in queryset:
+                    logger.info("repurpose_random gen pin=%s", getattr(pin, "id", None))
+                    current = (getattr(pin, "repurpose_hook", "") or "").strip()
+                    if current and self._looks_like_real_hook(current) and not force:
+                        logger.info("repurpose_random skip pin=%s (already has real hook)", getattr(pin, "id", None))
+                        skipped += 1
+                        continue
+
+                    try:
+                        hook = (self._generate_hook(pin, recent_hooks=recent_hooks, max_chars=50) or "").strip()
+                    except Exception:
+                        logger.exception("❌ Hook generation exception for pin=%s", getattr(pin, "id", None))
+                        failed += 1
+                        continue
+
+                    if not hook:
+                        logger.error("repurpose_random failed pin=%s (empty hook)", getattr(pin, "id", None))
+                        failed += 1
+                        continue
+
+                    pin.repurpose_hook = hook
+                    pin.repurpose_hook_generated_at = now()
+                    pin.save(update_fields=["repurpose_hook", "repurpose_hook_generated_at"])
+                    logger.info("repurpose_random saved pin=%s hook_len=%s", getattr(pin, "id", None), len(hook))
+
+                    recent_hooks.append(hook)
+                    updated += 1
+
+                messages.success(
+                    request,
+                    f"✅ Hooks generated: {updated} | Skipped: {skipped} | Failed: {failed}"
+                )
+
+                # We rely on the session-persisted Daily 4 selection above,
+                # so a redirect will re-render the same cards with fresh hooks.
+                return redirect(request.get_full_path())
+
+            # Default: mark as repurposed
+            if not selected_ids:
+                self.message_user(request, "⚠️ No pins selected.", level=messages.WARNING)
+            else:
+                queryset = PinTemplateVariation.objects.filter(id__in=selected_ids)
+                self._mark_repurposed(request, queryset, platform)
+                self.message_user(request, f"✅ {len(selected_ids)} pins marked as repurposed to {platform.title()}")
+                return redirect(request.get_full_path())  # refresh the page
+
+        today_key_daily4 = now().date().isoformat()
+        session_key_daily4 = f"daily4:{campaign_id}:{today_key_daily4}"
         context = {
             'title': "🎯 Daily 4 Repurpose Picks (Unique Pillars & Headlines)",
             'pins': selected,
             'platform': platform,
             'opts': self.model._meta,
+            # Export the current Daily 4 (uses session ids server-side)
+            'export_url': f"?campaign={campaign_id}&platform={platform}&export=1",
         }
         return TemplateResponse(request, "admin/repurpose_random_list.html", context)
 
@@ -761,7 +1109,7 @@ class ScheduledPinAdmin(admin.ModelAdmin):
         # Build CSV
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)
-        writer.writerow(["Board", "Title", "Description", "Link", "Image URL", "Alt Text"])
+        writer.writerow(["Board", "Title", "Hook", "Description", "Link", "Image URL", "Alt Text"])
 
         image_urls = []
 
@@ -771,9 +1119,12 @@ class ScheduledPinAdmin(admin.ModelAdmin):
                 self.message_user(request, f"❌ Missing title for pin ID {pin.pin.id}.", level=messages.ERROR)
                 return HttpResponse(status=400)
 
+            hook = (getattr(pin.pin, 'repurpose_hook', '') or '').strip()
+
             writer.writerow([
                 pin.board.name,
                 title,
+                hook,
                 pin.pin.description or "",
                 pin.pin.link or "",
                 pin.pin.image_url,
@@ -1042,6 +1393,7 @@ def export_today_csv(request):
     writer = csv.writer(response)
     writer.writerow([
         "Title",
+        "Hook",
         "Media URL",
         "Pinterest board",
         "Thumbnail",
@@ -1062,9 +1414,12 @@ def export_today_csv(request):
                 messages.warning(request, f"⛔ Export stopped at {publish_time.strftime('%H:%M')} – exceeds 21:00")
                 break
 
-        title = pin.pin.title[:100]
+        hook = (getattr(pin.pin, 'repurpose_hook', '') or '').strip()
+
+        title = (pin.pin.title or '')[:100]
         writer.writerow([
             title,
+            hook,
             pin.pin.image_url,
             pin.board.name,
             "",  # Thumbnail
