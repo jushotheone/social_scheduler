@@ -20,4 +20,5 @@ from django.urls import path, include  # ✅ include is important
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('admin-tools/', include('pinterest_scheduler.urls')),  # 👈 Add this line!
+    path('api/', include('pinterest_scheduler.api_urls')),  # BEIA workforce JSON API (token-authed)
 ]
