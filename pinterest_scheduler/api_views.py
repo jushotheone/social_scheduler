@@ -354,6 +354,9 @@ def repurpose_picks(request):
         count = int(request.GET.get("count", 4))
     except ValueError:
         count = 4
+    # exclude_platform: skip pins already repurposed to that platform. Lets a single-track
+    # cycle (run N×/day) pick a FRESH item each run instead of the same deterministic one.
+    exclude_platform = (request.GET.get("exclude_platform") or "").strip().lower()
 
     qs = (
         PinTemplateVariation.objects.annotate(
@@ -366,6 +369,8 @@ def repurpose_picks(request):
         .select_related("headline__pillar")
         .prefetch_related("keywords")
     )
+    if exclude_platform in REPURPOSE_PLATFORMS:
+        qs = qs.exclude(repurposed_statuses__platform=exclude_platform)
     pins = list(qs)
     # Deterministic per campaign per day so repeated calls return the same set.
     rng = random.Random(f"{campaign_id}:{now().date().isoformat()}")
