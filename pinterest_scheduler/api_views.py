@@ -372,6 +372,28 @@ def repurpose_picks(request):
     if exclude_platform in REPURPOSE_PLATFORMS:
         qs = qs.exclude(repurposed_statuses__platform=exclude_platform)
     pins = list(qs)
+    if not pins:
+        # Cycle finished: start again from the top (until new content is added).
+        # Clears only the "already repurposed" marks (for that platform, or all).
+        marks = RepurposedPostStatus.objects.filter(campaign_id=campaign_id)
+        if exclude_platform in REPURPOSE_PLATFORMS:
+            marks = marks.filter(platform=exclude_platform)
+        wrapped = marks.count()
+        if wrapped:
+            marks.delete()
+            logger.info(
+                "[BEIA-API] repurpose cycle wrapped campaign=%s platform=%s cleared=%s",
+                campaign_id, exclude_platform or "all", wrapped,
+            )
+            qs = PinTemplateVariation.objects.annotate(
+                repurposed_count=Count("repurposed_statuses")
+            ).filter(
+                headline__pillar__campaign_id=campaign_id,
+                repurposed_count__lt=len(REPURPOSE_PLATFORMS),
+            ).select_related("headline__pillar").prefetch_related("keywords")
+            if exclude_platform in REPURPOSE_PLATFORMS:
+                qs = qs.exclude(repurposed_statuses__platform=exclude_platform)
+            pins = list(qs)
     # Deterministic per campaign per day so repeated calls return the same set.
     rng = random.Random(f"{campaign_id}:{now().date().isoformat()}")
     rng.shuffle(pins)
